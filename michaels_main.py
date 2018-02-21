@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-from check.checker import Info, read_benchmark
-from check.GOPred import GOPred
+from assessment.assessmentTools import Info, read_benchmark
+from assessment.GOPred import GOPred
 import os
 import sys
 import errno    
 import gc
 import yaml
 import pickle as cp
-from assement.RESULT import result
+from assessment.RESULT import result
 
 
 def get_namespace_index(namespace):

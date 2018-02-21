@@ -1,35 +1,26 @@
 ---
-
-# The Assement Function Configuration
 assessment:
-
 # Predicition File (Only One  file allowed)
-        file:                                     ZZZ_1_9606.txt 
+        file: ZZZ_1_9606.txt 
 # Information Content File (MUST be made before running)
-	ic_file:                               ./ICTool/ia.map
+        ic_file:                               ./ICTool/ia.map
 # OBO file used 
-        obo:                                   ./assessment/go_20170429.obo
-# Where the benchmark 
-        benchmark:                  ./assessment/benchmark/
-# Where to store the results
-        results:                            ./results/
+        obo: ./assessment/go_20170429.obo
+# benchmark path
+        benchmark: ./assessment/benchmark/
+# results path
+        results: ./results/
 
-
-# The Plotting Function Configuration
 plot:
-
-# Where to store the results
-        results:                             ./results/
- # title is optional
-        title:                                   9606
+# results path
+        results: ./results/
+# title is optional
+        title: 9606
 # Y OR N
-        smooth:                           N
+        smooth: N
 # Files
 # We recommend only plotting results for the same species together
- # You can add up to 12 files
-        file1:                                   ZZZ_1_9606
-        #file2:                                ZZZ_2_9606
-        #file3:                                XXX_1_9606
-        
-       
-       
+# You can add up to 12 files
+        file1: ZZZ_1_9606
+        #file2: ZZZ_2_9606
+        #file3: XXX_1_9606
