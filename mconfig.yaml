@@ -1,16 +1,16 @@
 ---
 
 # The Assement Function Configuration
-assess:
+assessment:
 
 # Predicition File (Only One  file allowed)
         file:                                     ZZZ_1_9606.txt 
 # Information Content File (MUST be made before running)
 	ic_file:                               ./ICTool/ia.map
 # OBO file used 
-        obo:                                   ./check/go_20170429.obo
+        obo:                                   ./assessment/go_20170429.obo
 # Where the benchmark 
-        benchmark:                  ./check/benchmark/
+        benchmark:                  ./assessment/benchmark/
 # Where to store the results
         results:                            ./results/
 

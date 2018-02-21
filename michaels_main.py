@@ -10,7 +10,7 @@ import errno
 import gc
 import yaml
 import pickle as cp
-from check.RESULT import result
+from assement.RESULT import result
 
 
 def get_namespace_index(namespace):
@@ -119,13 +119,13 @@ def read_config():
     Read in the configuration file
     
     Output:
-    [0] :
-    [1] :
-    [2] :
-    [3] :
-    [4] :
-    [5] :
-    [6] :
+    [0] : String   OBO         file path
+    [1] : String   Benchmark   folder path
+    [2] : String   Results     folder path
+    [3] : String   prediction  file path
+    [4] : String   IC          file path
+    [5] : String   verbose     # NEED TO IMPLEMENT      
+    [6] : String   
     -> If need more
     '''
     
@@ -138,18 +138,18 @@ def read_config():
     args = parser.parse_args()
     # Load config file to dictionary
     try:
-        config_dict = yaml.load(args.config_stream)['assess']
+        config_dict = yaml.load(args.config_stream)['assessment']
     except yaml.YAMLError as exc:
         print(exc)
         sys.exit()
     # Store config into itermediate variables    
-    obo_path = config_dict['obo']
+    obo_path         = config_dict['obo']
     benchmark_folder = config_dict['benchmark']
-    results_folder = config_dict['results']
-    f = config_dict['file']
-    ic = config_dict['ic_file']
+    results_folder   = config_dict['results']
+    f                = config_dict['file']
+    ic               = config_dict['ic_file']
     
-    return(obo_path, benchmark_folder, results_folder, f,ic)
+    return(obo_path, benchmark_folder, results_folder, f, ic)
 
 
 if __name__=='__main__':
@@ -181,7 +181,7 @@ if __name__=='__main__':
     print('Species:%s\n' % taxon)
           
     resulthandle= open(resultsFolder + "/%s_results.txt" % (os.path.basename(f).split('.')[0]),'w')
-    prhandle = open(resultsFolder + "/check/%s_prrc.txt" % (os.path.basename(f).split('.')[0]),'w')
+    prhandle = open(resultsFolder + "/%s_prrc.txt" % (os.path.basename(f).split('.')[0]),'w')
     resulthandle.write('AUTHOR:%s\n' % author)
     resulthandle.write('MODEL: %s\n' % model) 
     resulthandle.write('KEYWORDS: %s\n' % keywords)  
