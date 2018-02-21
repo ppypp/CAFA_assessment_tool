@@ -1,3 +1,7 @@
 *.pyc
 *.graph
 *.map
+plots/
+results/
+helper_files/
+
