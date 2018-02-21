@@ -26,7 +26,9 @@ def parseGOTerms():
     [3]   : AltID map
                 
     '''
-    fhr = open("GO02-16-18.obo","r")
+    
+    # USe same OBO as the assessment tool ##################Make this user configurable
+    fhr = open("./assessment/go_20170429.obo","r") 
     
     mf_g = nx.DiGraph()
     cc_g = nx.DiGraph()
