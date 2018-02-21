@@ -6,11 +6,13 @@
 """
 
 import sys
-import math
 from collections import defaultdict
-import numpy
 import os
 from Ontology.IO import OboIO
+import FMAX  as F
+import WFMAX as W
+import SMIN  as S
+import NSMIN as N
 
 legal_species = [
 "all",
@@ -232,15 +234,16 @@ class Info:
     ''' Holds all the stuff we need, allows for just importing once '''
     
    
-    def __init__(self, benchmark, os_prediction_path, obocounts):
+    def __init__(self, benchmark, os_prediction_path, obocounts, ic):
         '''
         Initalize.
         
         Input:
-        benchmark -- instance of the benchmark class
-        os_prediction_path -- !ontology-specific! prediction file 
+        benchmark          : instance of the benchmark class
+        os_prediction_path : !ontology-specific! prediction file 
                               separated in GOPred (without headers)
-        obocounts -- total number of terms in the ontology
+        obocounts          : total number of terms in the ontology
+        ic                 : Dictionary KEY: Term VALUE: IC value
         '''
         
         # Initialize variables
@@ -266,8 +269,9 @@ class Info:
         # value: list of dictionaries
         # key: GO term
         # value: tuple(confidence, Boolean) Boolean is whether in self.true_terms     
-                
-        
+        self.ic                               = ic   
+        # key: term
+        # value: IC
         
         # Read in prediction file        
         if os.path.getsize(os_prediction_path) > 0:
@@ -333,8 +337,8 @@ class Info:
         If tc is larger, than it overwrites the confidence in self.predicted
         
         Input:
-        protein -- chosen protein 
-        tc -- a dictionary format as: {'confidence':0.57,'term':'GO:006644'}
+        protein : chosen protein 
+        tc      : Dictionary KEY: Confidence VALUE: GO_Term
         '''
         
         # Defined for readablity
@@ -358,13 +362,11 @@ class Info:
         This function compares if tc['term'] is in self.true_terms
         
         Input:
-        protein -- chosen protein to for this comparision
-        tc -- dictionary with {'confidence':0.57,'term':'GO:006644'}
+        protein  : Protein for comparision
+        tc       : Dictionary KEY: Confidence VALUE: GO_Term
         
         Output:
-        A list containing:
-        'confidence'
-        Boolean Value
+        [0]      : List [Confidence value, Boolean]
         '''
         
         if tc['term'] in self.true_terms[protein]:
@@ -388,417 +390,20 @@ class Info:
         mode -- {full, partial, both}
         
         Output:
-        result --  A result object with all needed info as fields
+        [0]   : Float         Output Value
+        [1]   : List[Float]   First Values
+        [2]   : List[Float]   Second values
+        [3]   : Float         Threshold
         '''
-        r = Result()
-        #### FOR NOW ####
+        info = self
         
-        if(tool == "Fmax"):
-            f = Fmax()
-            return f.output(self, mode)
-        elif(tool == "WFmax"):
-            WFmax.output(self, mode)
-        elif(tool == "Smin"):
-            Smin.output(self, mode)
-        elif(tool == "NSmin"):
-            NSmin.output(self, mode)
+        if(tool == "FMAX"):
+            return F.output(info, mode)
+        elif(tool == "WFMAX"):
+            return W.output(info, mode)
+        elif(tool == "SMIN"):
+            return S.output(info, mode)
+        elif(tool == "NSMIN"):
+            return N.output(info, mode)
         else:
-            #THROW ERROR
-            1
-        
-        return r #Results
-        
-############################################# END OF INFO ###########################################################
-
-class Result:
-    ''' Stores results in a common format '''   
-    def __init():
-        ''' State all variables needed '''
-
-        #Fmax
-        Fmax      = 0.0
-        PR        = []
-        RC        = []
-        Threshold = 0.0
-        
-        #
-        WFmax = 0.0
-        Smin  = 0.0
-        NSmin = 0.0
-        
-        #IC Value
-        IC = 0 #Likely an array/list
-        
-        
-        #####Add over info that you would want to output #####
-
-
-    
-##################################################################################################
-##################################################################################################
-##################################################################################################    
-    
-class Fmax:
-    '''
-    F maximum
-    '''
-
-    def f(self, precision, recall):
-        ''' Calculate F function '''
-        
-        try:
-            f = (2*precision*recall)/(precision+recall)
-        except ZeroDivisionError:
-            f = None
-        return f
-
-
-    def output(self, info, mode):
-        ''' 
-        Calculate the Fmax 
-        
-        Input:
-        info --
-        mode -- 
-        '''
-        # Intialize Variables
-        fmax = 0.0
-        fmax_threshold = 0.0
-        PR = []
-        RC = []
-        
-        # Run over all threshold values from 0 to 1, two signifigant digits
-        for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-            
-            threshold = numpy.around(threshold, decimals = 2)
-            # Run PRRC on given threshold
-            pr, rc = self.PRRC_average(info, threshold, mode)
-            if pr is None:
-                # No prediction above this threshold 
-                break
-            else:
-                PR.append(pr)
-                RC.append(rc)
-                # Find the F-value for this particular threshold
-                try:
-                    f = self.f(pr, rc)
-                except ZeroDivisionError:
-                    f = None
-                    
-            if f is not None and f >= fmax: ###########QUESTION##############
-                fmax = f
-                fmax_threshold = threshold
-        #Have found the Fmax at this point       
-        return ([PR, RC, fmax, fmax_threshold])
-        
-     
-    def PRRC(self, info, threshold, protein):
-        '''
-        Calculate the PRRC of a single protein
-        
-        Input:
-        info --
-        threshold --
-        protein --
-        '''
-        
-        # Initalize Variables
-        TP = 0.0      # True positive
-        count = 0   # Count how many terms are above the threshold
-        TT_length = len(info.true_terms[protein]) # Number of True terms
-        
-        if(threshold == 0):
-            TP = TT_length
-            count = info.obocount
-        else:
-            # For every term related to the protein
-            for term in info.predicted_bench[protein]:
-             # If it is above the threshold, increment the count
-                if info.predicted_bench[protein][term][0] >= threshold:
-                    count += 1
-                    # If it is actually True, increment TP
-                    if info.predicted_bench[protein][term][1] :
-                        TP += 1
-        # Find PR: TP / (TP + FP)
-        try:
-            precision = TP / count 
-        except ZeroDivisionError:
-            precision = None
-        # Find RC: TP (TP + FN)
-        recall = TP/TT_length
-        return (precision,recall)
-            
-            
-    def PRRC_average(self, info, threshold, mode):
-        '''
-        Calculate the overall PRRC of file
-        
-        Input:
-        info --
-        threshold --
-        mode -- 
-        '''
-        
-        # Initialize Variables
-        PR = 0.0
-        RC = 0.0
-        info.count_above_threshold[threshold] = 0
-
-        for protein in info.predicted_bench:
-            pr,rc = self.PRRC(info, threshold, protein)
-            if pr is not None:
-                PR += pr
-                info.count_above_threshold[threshold] += 1
-            if rc is not None:
-                RC += rc   
-                
-        if mode=='partial':
-            try:
-                recall = RC/info.count_predictions_in_benchmark
-            except ZeroDivisionError:
-                recall = 0
-                print("No protein in this predicted set became benchmarks\n")
-                
-        elif mode=='full':
-            try:
-                recall = RC/info.count_true_terms
-            except ZeroDivisionError:
-                recall = 0
-                print("No protein in this benchmark set\n")
-                
-        try:
-            precision = PR/info.count_above_threshold[threshold]   
-        except ZeroDivisionError:
-            precision = None
-            print("No prediction is made above the %.2f threshold\n" % threshold)
-           
-        return (precision, recall)        
-                    
-    
-#####################################################################################################    
-    
-class WFmax(Fmax): # Will use parts of Fmax just using IC values
-    '''
-    Weighted F maximun
-    '''
-    def ouput(self, info, mode):
-        '''
-        Calculate WFmax
-        '''
-        # Intialize Variables
-        wfmax = 0.0
-        wfmax_threshold = 0.0
-        WPR = []
-        WRC = []
-        
-        # Run over all threshold values from 0 to 1, two signifigant digits
-        for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-            
-            threshold = numpy.around(threshold, decimals = 2)
-            # Run PRRC on given threshold
-            wpr, wrc = self.PRRC_average(info, threshold, mode)
-            if wpr is None:
-                # No prediction above this threshold 
-                break
-            else:
-                WPR.append(wpr)
-                WRC.append(wrc)
-                # Find the F-value for this particular threshold
-                try:
-                    wf = self.f(wpr, wrc)
-                except ZeroDivisionError:
-                    wf = None
-                    
-            if wf is not None and wf >= wfmax: ###########QUESTION##############
-                wfmax = wf
-                wfmax_threshold = threshold
-        #Have found the Fmax at this point       
-        return ([WPR, WRC, wfmax, wfmax_threshold])
-        
-        
-    def WPRRC_average(self, info, threshold, mode):
-        '''
-        Calculate the overall PRRC of file
-        
-        Input:
-        info --
-        threshold --
-        mode -- 
-        '''
-        
-        # Initialize Variables
-        WPR = 0.0
-        WRC = 0.0
-        info.count_above_threshold[threshold] = 0
-
-        for protein in info.predicted_bench:
-            wpr, wrc = self.WPRRC(info, threshold, protein)
-            if wpr is not None:
-                WPR += wpr
-                info.count_above_threshold[threshold] += 1
-            if wrc is not None:
-                WRC += wrc   
-                
-        if mode == 'partial':
-            try:
-                recall = WRC/info.count_predictions_in_benchmark
-            except ZeroDivisionError:
-                recall = 0
-                print("No protein in this predicted set became benchmarks\n")
-                
-        elif mode == 'full':
-            try:
-                recall = WRC/info.count_true_terms
-            except ZeroDivisionError:
-                recall = 0
-                print("No protein in this benchmark set\n")
-                
-        try:
-            precision = WPR/info.count_above_threshold[threshold]   
-        except ZeroDivisionError:
-            precision = None
-            print("No prediction is made above the %.2f threshold\n" % threshold)
-           
-        return (precision, recall) 
-        
-        
-    def WPRRC(self, info, threshold, protein):
-        '''
-        Calculate the PRRC of a single protein
-        
-        Input:
-        info --
-        threshold --
-        protein --
-        '''
-        
-        # Initalize Variables
-        total = 0.0        
-        TP_total = 0.0      # True positive IC sum
-        
-        if(threshold == 0):
-            # This is all predicted terms
-            5 #temp code ##############################################################################################
-        else:
-            # For every term related to the protein
-            for term in info.predicted_bench[protein]:
-                if info.predicted_bench[protein][term][0] >= threshold:
-                    #Add IC value to total
-                    total += 0 #WHEREEVER WE HAVE THAT VALUE
-                    # If it is actually True, add its IC to TP_total
-                    if info.predicted_bench[protein][term][1] :
-                        TP_total += 0 #WHEREEVER WE HAVE THAT VALUE
-        
-                        
-        # Find PR: TP / (TP + FP)
-        try:
-            precision = TP_total / total 
-        except ZeroDivisionError:
-            precision = None
-        # Find RC: TP / (TP + FN)
-        recall = TP_total/5 ##We need the FN terms as well, how?###############
-        
-        return (precision,recall)
-    
-    
-#########################################################################################################################################    
-    
-class Smin:
-    '''
-    S minimum
-    '''
-    def ru(T, P):
-        '''
-        Calculate Remaining Uncertainity
-        
-        Input:
-        T -- Truth
-        P -- Prediction
-        '''
-        
-        total = 0.0
-        # Sum the IC values of every element in T not in P
-        for term in T:
-            if term not in P:
-                total += term.ic_value ################################################### MAKE SURE CORRECT FORMAT ONCE DTERMINED
-        return total 
-        
-        
-    def mi(T, P):
-        '''
-        Calculate Misinformation
-        
-        Input:
-        T -- Truth
-        P -- Prediction
-        '''
-        
-        total = 0.0
-        # Sum the IC values of every element in P not in T
-        for term in P:
-            if term not in T:
-                total += term.ic_value ################################################## MAKE SURE CORRECT FORMAT ONCE DTERMINED
-        return total                
-        
-        
-    
-    def s(k, ru, mi):
-        ''' Semantic Distance '''
-        
-        s = (ru^k + mi^k)^(1/k)
-        return s
-        
-
-    def s_average(info, k, threshold, mode):
-        '''
-        Semantic Distance 
-        
-        At a particular threshold, averaged over all proteins
-        
-        Input:
-        info --
-        k --
-        threshold --
-        mode --
-        '''
-        
-        
-        
-
-    def output(self, info, k, mode):
-        '''
-        Calculate Smin
-        
-        k = 2 by convention
-        '''
-    
-        # Intialize Variables
-        smin = 0.0
-        smin_threshold = 0.0
-        RU = []
-        MI = []
-        
-        # Run over all threshold values from 0 to 1, two signifigant digits
-        for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-            
-            threshold = numpy.around(threshold, decimals = 2)
-            # Run S on given threshold
-            ru, mi = self.s_average(info, k, threshold, mode)
-            RU.append(ru)
-            MI.append(mi)
-            # Find the S-value for this particular threshold
-            s = self.s(k, ru, mi)
-            if s is not None and s <= smin: ###########QUESTION##############
-                smin = s
-                smin_threshold = threshold
-        # Have found the Smin at this point       
-        return ([RU, MI, smin, smin_threshold])
-    
-    
-    ################################## END OF SMIN ###############################
-    
-class NSmin(Smin):
-    '''
-    Normalized S minimum
-    '''
-    
+            return None
