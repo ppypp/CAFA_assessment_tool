@@ -3,7 +3,7 @@
 
 import argparse
 from assessment.assessmentTools import Info, read_benchmark
-from assessment.GOPred import GOPred
+from assessment.GOPrediction import GOPrediction
 import os
 import sys
 import errno    
@@ -11,6 +11,7 @@ import gc
 import yaml
 import pickle as cp
 from assessment.RESULT import result
+import helper
 
 
 def get_namespace_index(namespace):
@@ -82,7 +83,7 @@ def typeConverter(oldType):
 
 def extant_file(x):
     '''
-    Description
+    Description - extant?
     
     Input:
     x   : 
@@ -124,7 +125,7 @@ def read_config():
     [2] : String   Results     folder path
     [3] : String   prediction  file path
     [4] : String   IC          file path
-    [5] : String   verbose     # NEED TO IMPLEMENT      
+    [5] : String   verbose     Y or N   
     [6] : String   
     -> If need more
     '''
@@ -143,34 +144,37 @@ def read_config():
         print(exc)
         sys.exit()
     # Store config into itermediate variables    
-    obo_path         = config_dict['obo']
-    benchmark_folder = config_dict['benchmark']
-    results_folder   = config_dict['results']
+    obo_path         = config_dict['obo_path']
+    benchmark_path   = config_dict['benchmark_path']
+    results_path     = config_dict['results_path']
     f                = config_dict['file']
-    ic               = config_dict['ic_file']
+    ic_path          = config_dict['ic_path']
+    verbose          = config_dict['verbose']
     
-    return(obo_path, benchmark_folder, results_folder, f, ic)
+    return(obo_path, benchmark_path, results_path, f, ic_path, verbose)
 
 
 if __name__=='__main__':
     '''
-    Main function that takes a predicition and returns stat values
+    Main function that takes a predicition and returns calculated values
     '''
     # Read Config
-    obo_path, benchmarkFolder, resultsFolder, f , ic_file = read_config()
+    obo_path, benchmarkFolder, resultsFolder, f , ic_path, verbose = read_config()
+    # Setup global variables
+    helper.init(verbose)
     # Setup workspace
     mkdir_p(resultsFolder)
     mkdir_p(resultsFolder+'/rawdata/')
     print('\nEvaluating %s.\n' % f)
     # Get predictions
-    all_pred = GOPred()
-    pred_path = open(f, 'r')
-    all_pred.read_and_split_and_write(obo_path, pred_path)
-    info = [all_pred.author, all_pred.model, all_pred.keywords, all_pred.taxon]
+    all_prediction = GOPrediction()
+    prediction_path = open(f, 'r')
+    all_prediction.read_and_split_and_write(obo_path, prediction_path)
+    info = [all_prediction.author, all_prediction.model, all_prediction.keywords, all_prediction.taxon]
     # Clear memory
     del all_pred
     gc.collect()
-    #Store values
+    # Store values
     author = info[0]
     model = info[1]
     keywords = info[2][0] 
@@ -182,19 +186,20 @@ if __name__=='__main__':
           
     resulthandle= open(resultsFolder + "/%s_results.txt" % (os.path.basename(f).split('.')[0]),'w')
     prhandle = open(resultsFolder + "/%s_prrc.txt" % (os.path.basename(f).split('.')[0]),'w')
+    
     resulthandle.write('AUTHOR:%s\n' % author)
     resulthandle.write('MODEL: %s\n' % model) 
     resulthandle.write('KEYWORDS: %s\n' % keywords)  
     resulthandle.write('Species:%s\n' % taxon)
     resulthandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ('Ontology','Type','Mode','Fmax','Threshold','Coverage'))
     
-    # Grab calculated IC [MUST RUN IC HELPER AT START OF PROJECT]
-    ic = cp.load(open(ic_file,"rb"))
+    # Grab calculated IC
+    ic = cp.load(open(ic_path,"rb"))
     # Make a result object for storing output
     r = result()
     
     for ontology in ['bpo','cco','mfo']:
-        path = os.path.splitext(pred_path.name)[0] + '_'+ontology.upper() + '.txt'
+        path = os.path.splitext(prediction_path.name)[0] + '_'+ontology.upper() + '.txt'
         print('ontology: %s\n' % ontology)
         for Type in ['type1','type2']:
             print('benchmark type:%s\n' % typeConverter(Type))

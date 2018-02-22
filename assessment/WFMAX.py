@@ -5,9 +5,12 @@ Created on Fri Feb 16 13:49:36 2018
 @author: mcgerten
 """
 import numpy
+import helper
+# Will use parts of Fmax just using IC values
 import FMAX
 
- # Will use parts of Fmax just using IC values
+
+
 '''
 Weighted F maximun
 '''
@@ -16,12 +19,11 @@ def output(info, mode):
     Calculate WFmax
     
     Input:
-    self :
-    info :
-    mode :
+    info   : Object
+    mode   : String     {partial, full}
     
     Output:
-    [0]  :
+    [0]    : List[ List[Float], List[Float], Float, Float]
     '''
     
     # Intialize Variables
@@ -32,8 +34,6 @@ def output(info, mode):
     
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-        #print(threshold)
-        # print("\n")
         threshold = numpy.around(threshold, decimals = 2)
         # Run PRRC on given threshold
         wpr, wrc = WPRRC_average(info, threshold, mode)
@@ -52,7 +52,7 @@ def output(info, mode):
         if wf is not None and wf >= wfmax: ###########QUESTION##############
             wfmax = wf
             wfmax_threshold = threshold
-    #Have found the Fmax at this point       
+    # Have found the WFmax at this point       
     return ([WPR, WRC, wfmax, wfmax_threshold])
     
     
@@ -61,12 +61,13 @@ def WPRRC_average( info, threshold, mode):
     Calculate the overall PRRC of file
     
     Input:
-    info      :
-    threshold :
-    mode      :
+    info      : Object
+    threshold : Float      {0.0 -> 1.0}
+    mode      : String     {partial, full}
     
     Output:
-    [0]       :
+    [0]       : Float     Precision Value
+    [1]       : Float     Recall value
     '''
     
     # Initialize Variables
@@ -97,7 +98,7 @@ def WPRRC_average( info, threshold, mode):
             print("No protein in this benchmark set\n")
             
     try:
-        precision = WPR/info.count_above_threshold[threshold]   
+        precision = WPR / info.count_above_threshold[threshold]   
     except ZeroDivisionError:
         precision = None
         print("No prediction is made above the %.2f threshold\n" % threshold)
@@ -110,12 +111,13 @@ def WPRRC(info, threshold, protein):
     Calculate the PRRC of a single protein
     
     Input:
-    info      :
-    threshold :
-    protein   :
+    info      : Object
+    threshold : Float      {0.0 -> 1.0}
+    protein   : 
     
     Ouput:
-    [0]       :
+    [0]       : Float     Precision Value
+    [1]       : Float     Recall value
     '''
     
     # Initalize Variables
@@ -126,33 +128,29 @@ def WPRRC(info, threshold, protein):
     TT_sum = 0.0
     for term in info.true_terms[protein]:
         try: 
-            #print("TT" + term)
-            #print("TT IC val" + str(info.ic[term][1]))
-            #print("TT_sum" + str(TT_sum))
             TT_sum += info.ic[term][1] 
         except KeyError:
-            TT_sum = TT_sum           
+            # When prediction has newer terms than IC 
+            pass           
         
         
 
     # For every term related to the protein
     for term in info.predicted_bench[protein]:
         if info.predicted_bench[protein][term][0] >= threshold:
-            #Add IC value to total
+            # Add IC value to total
             try:
                 total += info.ic[term][1]
             except KeyError:
+                # When prediction has newer terms than IC 
                 pass
-                #print("KEY ERROR Total")
-                #print(total)
             # If it is actually True, add its IC to TP_total
             if info.predicted_bench[protein][term][1] :
                 try:
                     TP_total += info.ic[term][1]
                 except KeyError:
+                    # When prediction has newer terms than IC 
                     pass
-                    #print("KEY ERROR TP_total")
-                    #print(TP_total)
                     
     # Find PR: TP / (TP + FP)
     try:

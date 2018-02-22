@@ -9,6 +9,7 @@ import sys
 from collections import defaultdict
 import os
 from Ontology.IO import OboIO
+import helper
 import FMAX  as F
 import WFMAX as W
 import SMIN  as S
@@ -122,7 +123,7 @@ def read_benchmark(namespace, species, types, fullbenchmarkfolder, obopath):
     obopath             :
     
     Output:
-    [0]                 : bench
+    [0]                 : Benchmark
     [1]                 : obocountDict 
     '''
     # Ancestor files here are precomputed
@@ -184,13 +185,13 @@ class benchmark:
     '''
     
     
-    def __init__(self,ancestor_path,benchmark_path):
+    def __init__(self, ancestor_path, benchmark_path):
         '''
         Initialize the benchmark.
         
         Input: 
-        benchmark_path -- ontology specific file location
-        ancestor_path -- ontology specific file location
+        benchmark_path : String    ontology specific file location
+        ancestor_path  : String    ontology specific file location
         '''
         
         # Key: protein
@@ -307,7 +308,7 @@ class Info:
                             # Add unknown term to the obsolete set
                             self.obsolete.add(tc['term'])
                             continue
-                        #For each term
+                        # For each term
                         if tc['term'] in self.predicted_bench[protein]:
                             # Term already exists, update confidence
                             self.update_confidence(protein,tc)
@@ -327,10 +328,11 @@ class Info:
                                         # Add term to self.predicted_bench
                                         self.predicted_bench[protein][ancterm] = self.compare(protein, newtc)
                                         
-            if self.count_predictions_in_benchmark==0:
+            if self.count_predictions_in_benchmark == 0:
                 self.exist = False
                 print("No protein in this predicted set became a benchmark\n")
         else:
+            # File does not exist
             self.exist=False
             print('No prediction made in this ontology.\n')
             
@@ -408,8 +410,8 @@ class Info:
         Effective main function, call this to get results
         
         Inputs:
-        tool -- {Fmax, WFmax, Smin, NSmin, ALL}
-        mode -- {full, partial, both}
+        tool  : {FMAX, WFMAX, SMIN, NSMIN}
+        mode  : {full, partial}
         
         Output:
         [0]   : Float         Output Value
@@ -428,4 +430,5 @@ class Info:
         elif(tool == "NSMIN"):
             return N.output(info, mode)
         else:
+            # Not a valid tool -> Throw error?
             return None

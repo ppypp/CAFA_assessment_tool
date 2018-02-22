@@ -4,6 +4,8 @@ Created on Fri Feb 16 13:48:31 2018
 
 @author: mcgerten
 """
+import helper
+
 ##########################################REFACTOR#############################
 # Its weird to have a class in a file by itself, should just reference the file 
 # -> need to refactor references to this file
@@ -11,9 +13,16 @@ class result:
     ''' Stores results in a common format '''   
     
     
-    def __init(self):
-        ''' State all variables needed '''
-    
+    def __init(self, results_path):
+        ''' 
+        State all variables needed 
+        
+        Input:
+        results_path : String       The directory to store results in
+        '''
+        self.path           = results_path         
+        
+        
         #Fmax
         self.FMAX           = 0.0
         self.PR             = []
@@ -44,8 +53,8 @@ class result:
         Input:
         type      : String
         value     : Float
-        subval1   : List
-        subval2   : List
+        subval1   : List[Float]
+        subval2   : List[Float]
         threshold : Float
         '''
         if type == "FMAX":
@@ -75,7 +84,7 @@ class result:
             
     def printOut(self):
         '''
-        
+        Print Data to console
         '''
         print('FMAX: %s\n' % self.FMAX)
         print('threshold giving FMAX: %s\n' % self.FMAXThreshold)
@@ -89,6 +98,6 @@ class result:
         
     def writeOut(self):
         '''
-        
+        Write data to file
         '''
         return

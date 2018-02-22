@@ -10,6 +10,7 @@ S minimum
 '''
 
 import numpy
+import helper
 
 
 def output(info, mode):
@@ -31,8 +32,8 @@ def output(info, mode):
     # Intialize Variables
     smin = 0.0
     smin_threshold = 0.0
-    RU = []
-    MI = []
+    RU   = []
+    MI   = []
     
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
@@ -49,9 +50,6 @@ def output(info, mode):
             smin_threshold = threshold
     # Have found the Smin at this point       
     return ([RU, MI, smin, smin_threshold])
-
-    
-
 
 
 def ru(info, T, P):
@@ -83,9 +81,12 @@ def mi(info, T, P):
     '''
     Calculate Misinformation for a particular protein
     
-    Input:
-    T : Truth
-    P : Prediction
+    Input:    
+    T   : Set [ Truth      ]
+    P   : Set [ Prediction ]
+    
+    Output:
+    [0] : Float
     '''
 
     # Sum of IC values of terms meeting criteria   
@@ -101,12 +102,22 @@ def mi(info, T, P):
     
 
 def s(k, ru, mi):
-    ''' Semantic Distance '''
+    ''' 
+    Semantic Distance 
+    
+    Input:
+    k   : Integer      k-value
+    ru  : Float        remaining uncertainity
+    mi  : Float        misinformation
+    
+    Output:
+    [0] : Float        s-value
+    '''
     
     if(ru is None or mi is None):
         s = None
     else:
-        s = (ru**k + mi**k)**(1/k)
+        s = (ru**k + mi**k)**(1 / k)
     return s
     
 
@@ -151,10 +162,10 @@ def s_average(info, k, threshold, mode):
             info.count_above_threshold[threshold] += 1
              
     try:
-        remain  = RU/info.count_above_threshold[threshold]
-        misinfo = MI/info.count_above_threshold[threshold] 
+        remain  = RU / info.count_above_threshold[threshold]
+        misinfo = MI / info.count_above_threshold[threshold] 
     except ZeroDivisionError:
-        remain = None
+        remain  = None
         misinfo = None
         print("No prediction is made above the %.2f threshold\n" % threshold)
             

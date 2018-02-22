@@ -1,26 +1,28 @@
 ---
 assessment:
 # Predicition File (Only One  file allowed)
-        file: ZZZ_1_9606.txt 
+        file:                                     ZZZ_1_9606.txt 
 # Information Content File (MUST be made before running)
         ic_file:                               ./ICTool/ia.map
 # OBO file used 
-        obo: ./assessment/go_20170429.obo
+        obo:                                   ./assessment/go_20170429.obo
 # benchmark path
-        benchmark: ./assessment/benchmark/
+        benchmark:                  ./assessment/benchmark/
 # results path
-        results: ./results/
+        results:                            ./results/
+# Verbose option (Y, N)
+        verbose :                         Y
 
 plot:
 # results path
-        results: ./results/
+        results:                            ./results/
 # title is optional
-        title: 9606
-# Y OR N
-        smooth: N
+        title:                                  9606
+# Smoothing ( Y, N)
+        smooth:                          N
 # Files
 # We recommend only plotting results for the same species together
 # You can add up to 12 files
-        file1: ZZZ_1_9606
-        #file2: ZZZ_2_9606
-        #file3: XXX_1_9606
+        file1:                                ZZZ_1_9606
+        #file2:                             ZZZ_2_9606
+        #file3:                             XXX_1_9606

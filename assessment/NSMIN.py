@@ -10,6 +10,7 @@ NS minimum (NOT IMPLEMENTED YET)
 '''
 
 import numpy
+import helper
 
 
 def output(info, mode):

@@ -5,7 +5,7 @@ Created on Fri Feb 16 13:38:18 2018
 @author: mcgerten
 """
 import numpy
-
+import helper
 
 
 '''
@@ -17,8 +17,11 @@ def output(info, mode):
     Calculate the Fmax 
     
     Input:
-    info --
-    mode -- 
+    info   : Object
+    mode   : Sting       {partial, full}
+    
+    Output:
+    [0]    : List[List[Float], List[Float], Float, Float]
     '''
     # Intialize Variables
     fmax = 0.0
@@ -44,18 +47,27 @@ def output(info, mode):
             except ZeroDivisionError:
                 fval = None
                 
-        if fval is not None and fval >= fmax: ###########QUESTION##############
+        if fval is not None and fval >= fmax:
             fmax = fval
             fmax_threshold = threshold
-    #Have found the Fmax at this point       
+    # Have found the Fmax at this point       
     return ([PR, RC, fmax, fmax_threshold])
     
     
 def f(precision, recall):
-    ''' Calculate F function '''
+    ''' 
+    Calculate F function 
+    
+     Input:
+     precision : Float
+     recall    : Float
+     
+     Output:
+     [0]       : Float
+    '''
     
     try:
-        f = (2*precision*recall)/(precision+recall)
+        f = (2*precision*recall) / (precision + recall)
     except ZeroDivisionError:
         f = None
     return f
@@ -66,14 +78,18 @@ def PRRC(info, threshold, protein):
     Calculate the PRRC of a single protein
     
     Input:
-    info --
-    threshold --
-    protein --
+    info       : Object
+    threshold  : Float      {0.0 -> 1.0}
+    protein    : 
+    
+    Output:
+    [0]        : Float
+    [1]        : Float
     '''
     
     # Initalize Variables
-    TP = 0.0      # True positive
-    count = 0   # Count how many terms are above the threshold
+    TP = 0.0     # True positive
+    count = 0    # Count how many terms are above the threshold
     TT_length = len(info.true_terms[protein]) # Number of True terms
     
     if(threshold == 0):
@@ -94,7 +110,7 @@ def PRRC(info, threshold, protein):
     except ZeroDivisionError:
         precision = None
     # Find RC: TP (TP + FN)
-    recall = TP/TT_length
+    recall = TP / TT_length
     return (precision,recall)
         
         
@@ -103,9 +119,13 @@ def PRRC_average(info, threshold, mode):
     Calculate the overall PRRC of file
     
     Input:
-    info --
-    threshold --
-    mode -- 
+    info      : Object
+    threshold : Float      {0.0 -> 1.0}
+    mode      : String     {partial, full}
+    
+    Output:
+    [0]        : Float
+    [1]        : Float
     '''
     
     # Initialize Variables
@@ -114,7 +134,7 @@ def PRRC_average(info, threshold, mode):
     info.count_above_threshold[threshold] = 0
 
     for protein in info.predicted_bench:
-        pr,rc = PRRC(info, threshold, protein)
+        pr, rc = PRRC(info, threshold, protein)
         if pr is not None:
             PR += pr
             info.count_above_threshold[threshold] += 1
@@ -123,20 +143,20 @@ def PRRC_average(info, threshold, mode):
             
     if mode == 'partial':
         try:
-            recall = RC/info.count_predictions_in_benchmark
+            recall = RC / info.count_predictions_in_benchmark
         except ZeroDivisionError:
             recall = 0
             print("No protein in this predicted set became benchmarks\n")
             
     elif mode == 'full':
         try:
-            recall = RC/info.count_true_terms
+            recall = RC / info.count_true_terms
         except ZeroDivisionError:
             recall = 0
             print("No protein in this benchmark set\n")
             
     try:
-        precision = PR/info.count_above_threshold[threshold]   
+        precision = PR / info.count_above_threshold[threshold]   
     except ZeroDivisionError:
         precision = None
         print("No prediction is made above the %.2f threshold\n" % threshold)
