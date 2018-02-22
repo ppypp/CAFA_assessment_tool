@@ -3,13 +3,13 @@ assessment:
 # Predicition File (Only One  file allowed)
         file:                                     ZZZ_1_9606.txt 
 # Information Content File (MUST be made before running)
-        ic_file:                               ./ICTool/ia.map
+        ic_path:                           ./ICTool/ia.map
 # OBO file used 
-        obo:                                   ./assessment/go_20170429.obo
+        obo_path:                      ./assessment/go_20170429.obo
 # benchmark path
-        benchmark:                  ./assessment/benchmark/
+        benchmark_path:     ./assessment/benchmark/
 # results path
-        results:                            ./results/
+        results_path:               ./results/
 # Verbose option (Y, N)
         verbose :                         Y
 

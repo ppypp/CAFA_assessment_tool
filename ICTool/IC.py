@@ -344,7 +344,7 @@ def PhillipLordIC(data):
     data           : Dictionary KEY: AnnotationID, VALUE: Annotation (Use GAFtoDICT to get)
     
     Output:
-    [0]            : 
+    [0]            : Dictionary KEY: Node (Term), VALUE: IC]
     '''
     
     go_terms = []
@@ -398,7 +398,7 @@ def main():
     '''
     Get a GAF, Convert, Calculate, and output. 
     '''
-    ICHelper.setupGraphs()
+    ICHelper.setupGraphs("./assessment/go_20170429.obo")
     gaf = GOA._gaf20iterator(open("goa_human.gaf"))
     data = GAFtoDICT(gaf)
     ic = WyattClarkIC(data)

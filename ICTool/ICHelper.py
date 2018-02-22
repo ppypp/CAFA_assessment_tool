@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Basically the debais prep code, made more readable with slight changes
+USE ONTOLOGY.IO to do this?
 """
 
 import networkx as nx
@@ -12,23 +13,23 @@ ROOT_CCO='GO:0005575'
 ROOT_MFO='GO:0003674'
 
 
-def parseGOTerms():
+def parseGOTerms(obopath):
     '''
     Create graphs from an OBO file.   
     
     Input:
-    SHOULD PASS IN OBO FILENAME FOR EXTENSIONS BUT LAZY FOR NOW
+    obopath : String      File location of OBO
     
     Output:
-    [0]   : MFO Graph
-    [1]   : BPO Graph
-    [2]   : CCO Graph
-    [3]   : AltID map
+    [0]     : MFO Graph
+    [1]     : BPO Graph
+    [2]     : CCO Graph
+    [3]     : AltID map
                 
     '''
     
     # USe same OBO as the assessment tool ##################Make this user configurable
-    fhr = open("./assessment/go_20170429.obo","r") 
+    fhr = open(obo_path,"r") 
     
     mf_g = nx.DiGraph()
     cc_g = nx.DiGraph()

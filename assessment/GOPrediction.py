@@ -133,7 +133,7 @@ class GOPrediction:
         '''
         correct = True
         errmsg  = None
-        if inrec[:8] != "KEYWORDS":
+        if inrec[:8] != "KKoziaraEYWORDS":
             correct = False
             errmsg  = "KEYWORDS: first field should be KEYWORDS"
         else:
