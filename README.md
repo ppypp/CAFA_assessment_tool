@@ -24,10 +24,10 @@ For bug reports, comments or questions, please email nzhou[AT]iastate.edu.
  - `assessment.py` 
 	- Only input needed is the configuration file `config.yaml`, where the following parameters are specified in the first section `assessment`.
 	- First parameter `file`           : prediction file formatted according to [CAFA3 formats](https://www.synapse.org/#!Synapse:syn5840147/wiki/402192)
-	- Second parameter `ic_path`       : path of the gene ontology obo file. The latest version can be downloaded [here](http://purl.obolibrary.org/obo/go.obo). Note that the obo file used here should not be older than the one used in the prediction.
+	- Second parameter `ic_path`       : path of the calculated infromation content map. This must be made proir to running 'assessment.py'. This is achieved by running 'IC.py' in the ICTool directory.
 	- Third parameter  `obo_path`      : path of the gene ontology obo file. The latest version can be downloaded [here](http://purl.obolibrary.org/obo/go.obo). Note that the obo file used here should not be older than the one used in the prediction.
-	- Fourth parameter `benchmark_path`: directory of the benchmark folder. Specific formats are required for the benchmark folder, including two sub-directories: groundtruth and lists. Please refer to auxiliary function `benchmark_folder.py` for the creation of this folder, as well as the genral creation of benchmarks. An example benchmark folder is given in this repository `./precrec/benchmark`
-	- Fifth parameter  `results_path`  : Folder where results are saved. A `pr_rc` folder will be created within the results folder.
+	- Fourth parameter `benchmark_path`: directory of the benchmark folder. Specific formats are required for the benchmark folder, including two sub-directories: groundtruth and lists. Please refer to auxiliary function `benchmark_folder.py` for the creation of this folder, as well as the genral creation of benchmarks. An example benchmark folder is given in this repository `./assessment/benchmark`
+	- Fifth parameter  `results_path`  : Folder where results are saved. A `rawdata` folder will be created within the results folder.
 	- Note that only the first section `assessment` of the configuration file is used here, the rest of the configuration file can be ignored for this function	
  - `plot.py`
 	- Only input needed is the configuration file `config.yaml`, where the following parameters are specified in the second section `plot`.
