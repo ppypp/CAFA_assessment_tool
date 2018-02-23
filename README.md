@@ -22,7 +22,7 @@ For bug reports, comments or questions, please email nzhou[AT]iastate.edu.
 ## Main Functions
  We provide two main functions to assist in the evaluation of GO-term prediction within the scope of CAFA, the main assessment function and the plot function.
  - `assessment.py` 
-	- Only input needed is the configuration file `config.yaml`, where the following four parameters are specified in the first section `assess`.
+	- Only input needed is the configuration file `config.yaml`, where the following parameters are specified in the first section `assessment`.
 	- First parameter `file`           : prediction file formatted according to [CAFA3 formats](https://www.synapse.org/#!Synapse:syn5840147/wiki/402192)
 	- Second parameter `ic_path`       : path of the gene ontology obo file. The latest version can be downloaded [here](http://purl.obolibrary.org/obo/go.obo). Note that the obo file used here should not be older than the one used in the prediction.
 	- Third parameter  `obo_path`      : path of the gene ontology obo file. The latest version can be downloaded [here](http://purl.obolibrary.org/obo/go.obo). Note that the obo file used here should not be older than the one used in the prediction.
@@ -31,7 +31,7 @@ For bug reports, comments or questions, please email nzhou[AT]iastate.edu.
 	- Note that only the first section `assessment` of the configuration file is used here, the rest of the configuration file can be ignored for this function	
  - `plot.py`
 	- Only input needed is the configuration file `config.yaml`, where the following parameters are specified in the second section `plot`.
-	- First parameter `results`: the results from the `assess_main.py` function.
+	- First parameter `results`: the results from the `assessment.py` function.
 	- Second parameter `title`: title of the plot. Optional.
 	- Third parameter `smooth`: whether the precision-recall curves should be smoothed. Input 'Y' or 'N'. 
 	- Fourth parameter(s) `fileN`: name of the result file to be plotted. Can add up to 12 files. These results will be drawn on the same plot.
