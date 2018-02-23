@@ -13,12 +13,12 @@ ROOT_CCO='GO:0005575'
 ROOT_MFO='GO:0003674'
 
 
-def parseGOTerms(obopath):
+def parseGOTerms(obo_path):
     '''
     Create graphs from an OBO file.   
     
     Input:
-    obopath : String      File location of OBO
+    obo_path : String      File location of OBO
     
     Output:
     [0]     : MFO Graph
@@ -219,13 +219,16 @@ def findAllAncestorsForAllNodesForOntology(filename):
     return graph_ancestors
 
 
-def setupGraphs():
+def setupGraphs(obo_path):
     '''
     Code used to create the ontology graphs based on a given OBO
+    
+    Input:
+    obo_path : String      File path for the OBO
     '''
     
     # Get needed information
-    mf_g, bp_g, cc_g, alt_id_to_id = parseGOTerms()
+    mf_g, bp_g, cc_g, alt_id_to_id = parseGOTerms("../" + obo_path)
     # Save to file
     cp.dump(mf_g, open("MFO.graph", "wb"))
     cp.dump(bp_g, open("BPO.graph", "wb"))

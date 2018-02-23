@@ -26,6 +26,10 @@ import collections
 import math
 import pickle as cp
 import ICHelper
+import os
+import argparse
+import sys
+import yaml
 
 
 def GAFtoDICT(gaf):
@@ -118,12 +122,15 @@ def propagateOntologies(Protein_to_GO):
         for annotation in annotations:
             aspect = annotation[1]
             GO_term = annotation[0]
-            if aspect == 'F':
-                ancestors.extend(mf_ancestors[GO_term])
-            if aspect == 'P':
-                ancestors.extend(bp_ancestors[GO_term])
-            if aspect == 'C':
-                ancestors.extend(cc_ancestors[GO_term])
+            try:
+                if aspect == 'F':
+                    ancestors.extend(mf_ancestors[GO_term])
+                if aspect == 'P':
+                    ancestors.extend(bp_ancestors[GO_term])
+                if aspect == 'C':
+                    ancestors.extend(cc_ancestors[GO_term])
+            except KeyError: # Key doesn't exist
+                pass
         ancestors = list( set( ancestors ) )
         Prot_to_GO_new[protein] = ancestors
         
@@ -391,26 +398,61 @@ def WyattClarkIC(data):
     return ontology_to_ia
     
 
+def extant_file(x):
+    '''
+    Description - extant?
     
+    Input:
+    x   : 
+    
+    Output:
+    [0] :
+    '''
+    
+    if not os.path.isfile(x):
+        raise argparse.ArgumentTypeError("{0} does not exist".format(x))
+    else:
+        return(open(x,'r'))
+        
+        
+def read_config():
+    '''
+    Read in the configuration file
+    
+    Output:
+    [0] : String   OBO         file path
+    '''
+    
+    parser = argparse.ArgumentParser(description='Precision- Recall assessment for CAFA predictions.', )
+    
+    parser.add_argument('config_stream', type = extant_file, help = 'Configuration file')            
+    args = parser.parse_args()
+    # Load config file to dictionary
+    try:
+        config_dict = yaml.load(args.config_stream)['assessment']
+    except yaml.YAMLError as exc:
+        print(exc)
+        sys.exit()
+    # Store config into itermediate variables    
+    obo_path = config_dict['obo_path']
+    
+    return(obo_path)
+
     
 
 def main():
     '''
     Get a GAF, Convert, Calculate, and output. 
     '''
-    ICHelper.setupGraphs("./assessment/go_20170429.obo")
+    
+    # Use the assessment configuration file to grab the OBO file.
+    file_path = read_config()
+    ICHelper.setupGraphs(file_path)
     gaf = GOA._gaf20iterator(open("goa_human.gaf"))
     data = GAFtoDICT(gaf)
-    ic = WyattClarkIC(data)
-    print ic
-    # I now have the IC values by term in PL_info
-    #PL_info = PhillipLordIC(data, 10, .70)
-    #f = open( "Output.out", "w" )
-    #f.write("This is a fake header")
-    #for item in PL_info:
-    #    f.write(item)
-    # Can use this to weigh terms
-    #writeToFile(data, "Ouput")
+    WyattClarkIC(data)
+    print("IC values created")
+    # WyattClarkIC stores to disk, we are done!
     
     
 if __name__ == '__main__':
