@@ -12,6 +12,8 @@ assessment:
         results_path:               ./results/
 # Verbose option (Y, N)
         verbose :                         Y
+# GAF file location                          
+        gaf_path :                     goa_human.gaf
 
 plot:
 # results path
@@ -26,3 +28,5 @@ plot:
         file1:                                ZZZ_1_9606
         #file2:                             ZZZ_2_9606
         #file3:                             XXX_1_9606
+
+

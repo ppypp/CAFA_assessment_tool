@@ -421,6 +421,7 @@ def read_config():
     
     Output:
     [0] : String   OBO         file path
+    [1] : String   GAF         file path
     '''
     
     parser = argparse.ArgumentParser(description='Precision- Recall assessment for CAFA predictions.', )
@@ -435,8 +436,9 @@ def read_config():
         sys.exit()
     # Store config into itermediate variables    
     obo_path = config_dict['obo_path']
-    
-    return(obo_path)
+    gaf_path = config_dict['gaf_path']
+     
+    return(obo_path, gaf_path)
 
     
 
@@ -446,9 +448,9 @@ def main():
     '''
     
     # Use the assessment configuration file to grab the OBO file.
-    file_path = read_config()
-    ICHelper.setupGraphs(file_path)
-    gaf = GOA._gaf20iterator(open("goa_human.gaf"))
+    obo_path, gaf_path = read_config()
+    ICHelper.setupGraphs(obo_path)
+    gaf = GOA._gaf20iterator(open(gaf_path))
     data = GAFtoDICT(gaf)
     WyattClarkIC(data)
     print("IC values created")
