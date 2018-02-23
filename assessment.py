@@ -112,6 +112,7 @@ def mkdir_p(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else:
+            # If another error
             raise
             
             
@@ -172,7 +173,7 @@ if __name__=='__main__':
     all_prediction.read_and_split_and_write(obo_path, prediction_path)
     info = [all_prediction.author, all_prediction.model, all_prediction.keywords, all_prediction.taxon]
     # Clear memory
-    del all_pred
+    del all_prediction
     gc.collect()
     # Store values
     author = info[0]

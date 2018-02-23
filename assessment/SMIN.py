@@ -72,7 +72,7 @@ def ru(info, T, P):
             try:
                 total += info.ic[term][1]
             except KeyError:
-                total = total
+                pass
             
     return total
     
@@ -97,7 +97,7 @@ def mi(info, T, P):
             try:
                 total += info.ic[term][1]
             except KeyError:
-                total = total
+                pass
     return total            
     
 

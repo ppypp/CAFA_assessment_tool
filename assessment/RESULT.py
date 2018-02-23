@@ -23,27 +23,46 @@ class result:
         self.path           = results_path         
         
         
-        #Fmax
+        # FMAX
         self.FMAX           = 0.0
         self.PR             = []
         self.RC             = []
         self.FMAXThreshold  = 0.0
         
-        #
+        # Raw data for FMAX
+        
+        
+        
+        # Weighted FMAX
         self.WFMAX          = 0.0
         self.WPR            = []
         self.WRC            = []
         self.WFMAXThreshold = 0.0
         
+        # Raw data for WFMAX
+        
+        
+        
+        # SMIN
         self.SMIN           = 0.0
         self.RU             = []
         self.MI             = []
         self.SMINThreshold  = 0.0
         
+        # Raw data for SMIN
+        
+        
+        
+        # Normalized SMIN        
         self.NSMIN          = 0.0
         self.NRU            = []
         self.NMI            = []
         self.NSMINThreshold = 0.0
+        
+        # Raw data for NSMIN
+        
+        
+        
         
         
     def update(self, type, value, subval1, subval2, threshold):
