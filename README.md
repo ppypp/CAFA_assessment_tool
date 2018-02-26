@@ -56,7 +56,7 @@ Therefore, we here provide functions to convert between UniProt IDs and CAFA3 ID
 	- Refer to comments in the script `./ID_conversion/ID_conversion.py` and third example below for usage.
  - `./ICTool/IC.py` 
 	- Calculates the Information content of a given OBO
-	- How to use: From the ICTool directory `IC.py config.yaml`.
+	- How to use: From the ICTool directory `IC.py ../config.yaml`.
 	-  It uses the assessement config file, so once you have that setup, this will run on the same file set.
 
 ## Examples	

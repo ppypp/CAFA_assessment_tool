@@ -17,10 +17,20 @@ from matplotlib.font_manager import FontProperties
 import yaml
 import argparse
 import errno
+import pickle as cp
 
 
 
 def typeConverter(oldType):
+    '''
+    Converts from outdated types to current ones.
+    
+    Input:
+    oldtype : String    old version of type
+    
+    Output:
+    [0]     : String    newtype
+    '''
     if oldType=='type1':
         newType = 'NK'
     elif oldType == 'type2':
@@ -31,79 +41,114 @@ def typeConverter(oldType):
 
 
 class result:    
+    
     def __init__(self):
-        self.type = ''
-        #type include: precision/recall, weighted pr, ru/mi, weighted ru/mi
-        self.precision = []
-        self.recall = []
-        self.opt = int
-        #opt is the optimized value including fmax, smin, wfmax, etc
-        self.thres = float
-        #thres is the threshold value that gives the optimized value
-        self.author = ''
-        self.model = ''
-        self.keywords = ''
-        self.taxon = ''
-        self.ontology = ''
-        self.mode = ''
-        self.TYPE = ''
-        self.coverage = float
-        #NK or LK
-    def read_info(self,onto,Type,mode,method):
-        fields = method.split('_')
-        self.author=fields[0]
-        self.model=int(fields[1])
-        self.taxon=fields[2]
-        self.ontology=onto
-        self.mode=mode
-        self.TYPE=Type
-        self.method = method
-    def read_prrc(self,pr,rc):
-        self.precision=pr
-        self.recall=rc
-    def calculate_fmax(self):
-        fmax = 0
-        f_thres = 0.00
-        for i in range(101):
-            try:
-                a = float(self.precision[i])
-                b = float(self.recall[i])
-            except IndexError:
-                print('cutoff')
-                break
-            try:
-                f = 2*a*b/(a+b)
-            except ZeroDivisionError:
-                f = None
-            if f!=None and f>=fmax:
-                fmax = f
-                f_thres = numpy.around(i*0.01,decimals=2)
-        self.opt = numpy.around(fmax, decimals=5)
-        self.thres = f_thres
-        print('fmax is %s\n' % fmax)
-        print('thres is %s\n' % f_thres)
+        '''
+        Intilize result object
+        '''
         
-    def check_fmax(self,onto,Type,mode,method, results_folder):
-        #This functino checks the fmax calculated from the saved pr_rc values
-        #vs the onces calculated in results
-        result_file = os.path.join(results_folder,'%s_results.txt' % method)
-        with open(result_file) as f:
-            for line in f:
-                if line.startswith(onto):
-                    if line.split('|')[0].split()[1]==Type and line.split('|')[0].split()[2]==mode:
-                        fmax = line.split('|')[1].split()[0]
-                        print(fmax)
-                        nfmax = numpy.around(float(fmax), decimals=5)
-                        thres = line.split('|')[1].split()[1]
-                        break
-        if '%.5f' % nfmax == '%.5f' % self.opt  and str(thres)==str(self.thres):
-            return(True)
+        self.type         = ''
+        #type include: precision/recall, weighted pr, ru/mi, weighted ru/mi
+        self.FMAXPR       = []
+        self.FMAXRC       = []
+        self.FMAXOPT      = float
+        self.FMAXTHR      = float
+        
+        self.WFMAXPR      = []
+        self.WFMAXRC      = []
+        self.WFMAXOPT     = float
+        self.WFMAXTHR     = float
+        
+        self.SMINRU       = []
+        self.SMINMI       = []
+        self.SMINOPT      = float
+        self.SMINTHR      = float
+                
+        self.NSMINRU      = []
+        self.NSMINMI      = []
+        self.NSMINOPT     = float
+        self.NSMINTHR     = float
+        
+        self.author       = ''
+        self.model        = ''
+        self.keywords     = ''
+        self.taxon        = ''
+        self.ontology     = ''
+        self.mode         = ''
+        self.TYPE         = ''
+        
+        self.coverage     = float
+        #NK or LK
+        
+        
+    def read_info(self, onto, Type, mode, method):
+        '''
+        Store data
+        
+        Input:
+        onto   : String    Ontology
+        Type   : 
+        mode   : String    {Full, Partial}
+        method : 
+        '''
+        
+        fields        = method.split('_')
+        self.author   = fields[0]
+        self.model    = int(fields[1])
+        self.taxon    = fields[2]
+        self.ontology = onto
+        self.mode     = mode
+        self.TYPE     = Type
+        self.method   = method
+        
+        
+    def read_values(self, evaluation, value1, value2, opt, threshold):
+        '''
+        Read in the values 
+        ############################################################### 
+        SHould I just pass a filename and grab them directly?)
+        ################################################################
+        
+        Input:
+        evaluation : String        {FMAX, WFMAX, SMIN, NSMIN}
+        value1     : List[Float]
+        value2     : List[Float]
+        '''        
+                
+        if(evaluation == "FMAX"):
+            self.FMAXPR       = value1
+            self.FMAXRC       = value2
+            self.FMAXOPT      = opt
+            self.FMAXTHR      = threshold
+            
+        elif(evaluation == "FMAX"):
+            self.WFMAXPR      = value1
+            self.WFMAXRC      = value2
+            self.WFMAXOPT     = opt
+            self.WFMAXTHR     = threshold
+            
+        elif(evaluation == "FMAX"):
+            self.SMINRU       = value1
+            self.SMINMI       = value2
+            self.SMINOPT      = opt
+            self.SMINTHR      = threshold
+            
+        elif(evaluation == "FMAX"):
+            self.NSMINRU      = value1
+            self.NSMINMI      = value2
+            self.NSMINOPT     = opt
+            self.NSMINTHR     = threshold
+            
         else:
-            print('calculated fmax: %s, result fmax: %s\n' % (self.opt, nfmax))
-            print('calculated thres: %s, result thres: %s\n' % (self.thres, thres))
-            return(False)           
+            # Not a valid evaluation 
+            pass
+    
             
     def getCoverage(self,onto,Type,mode,method,results_folder):
+        '''
+        Needed?
+        '''
+        
         result_file = os.path.join(results_folder,'%s_results.txt' % method)
         with open(result_file) as f:
             for line in f:
@@ -114,8 +159,12 @@ class result:
                         break            
         
         
-        
+###############################################END OF RESULT ############################        
 def getprrc(onto,Type,mode,prrcfolder,method, results_folder):
+    '''
+    
+    '''
+    
     #Type need to be 'NK' and 'LK'
     filename = os.path.join(prrcfolder,'%s_prrc.txt' % (method))
     r = result()
@@ -146,27 +195,62 @@ def getprrc(onto,Type,mode,prrcfolder,method, results_folder):
     
 
 
-def curveSmooth(result):
+def curveSmooth(result, t):
+    '''
+    Curve smoothing of a given curve
+    
+    Input:
+    result : Object
+    t      : String              Type of ansyslis
+    Ouput:
+    [0]    : List[float,float]   [Precision, Recall]
+    '''
+    
     #This function removes a p-r pair if there exists another p-r pair that's greater in both precision and recall
     #precision and recall should both be lists of the same length
-    precision = []
-    recall = []
-    for i in range(len(result.precision)):
+    val1 = []
+    val2 = []
+    val1name = ""
+    val2name = ""
+    
+    if (t == "FMAX"):
+        val1name = "FMAXPR"
+        val2name = "FMAXRC"
+    elif (t == "WFMAX"):
+        val1name = "WFMAXPR"
+        val2name = "WFMAXRC"
+    elif (t == "SMIN"):
+        val1name = "SMINRU"
+        val2name = "SMINMI"
+    elif(t == "NSMIN"): 
+        val1name = "NSMINRU"
+        val2name = "NSMINMI"
+    else:
+        # If not valid type, return empty Lists
+        return([[],[]])        
+        
+    for i in range(len(result.val1name)):
         remove = False
         for j in range(i):
-            if result.precision[i]<result.precision[j] and result.recall[i]<result.recall[j]:
+            if result.val1name[i]<result.val1name[j] and result.val2name[i]<result.val2name[j]:
                 remove = True
                 break
         if not remove:
-            precision.append(result.precision[i])
-            recall.append(result.recall[i])
-    return([precision,recall])
+            val1.append(result.val1name[i])
+            val2.append(result.val2name[i])
+    return([val1,val2])
     
     
-def plotMultiple(title,listofResults,smooth):
+def plotMultiple(title, listofResults, smooth):
     '''
-    supply lists of precision+recall+name lists
+    Plots the graph
+    
+    Input:
+    title   : String
+    results : List[]
+    Smooth  : Boolean
     '''
+    
     fontP = FontProperties()
     fontP.set_size('small')
     num = len(listofResults)
@@ -199,14 +283,21 @@ def plotMultiple(title,listofResults,smooth):
         
         
 def extant_file(x):
+    '''
+    
+    '''
+    
     if not os.path.isfile(x):
         raise argparse.ArgumentTypeError("{0} does not exist".format(x))
     else:
         return(open(x,'r')) 
         
         
-        
 def read_config():
+    '''
+    
+    '''
+    
     parser = argparse.ArgumentParser(description='Precision-Recall Curves plot', )
     
 
@@ -232,6 +323,10 @@ def read_config():
 
 
 def check_existence(results_folder, methods):
+    '''
+    
+    '''
+    
     re = True
     if os.path.isdir(results_folder):
         for method in methods:
@@ -258,6 +353,10 @@ def check_existence(results_folder, methods):
     return(re)
     
 def mkdir_p(path):
+    '''
+    
+    '''
+    
     try:
         os.makedirs(path)
     except OSError as exc:
@@ -267,18 +366,23 @@ def mkdir_p(path):
             raise
      
 if __name__=='__main__':
+    '''
+    
+    '''
+    
+    # Get config details
     results_folder, title, smooth, methods = read_config()
     if check_existence(results_folder, methods):
-        prrcfolder = results_folder+'/pr_rc/'
+        rawdata_folder = results_folder + '/rawdata/'
         for onto in ['bpo','cco','mfo']:
             for Type in ['LK','NK']:
                 for mode in ['partial','full']:
-                    specific_title = '%s_%s_%s_%s_fmax.png' % (title,onto,Type,mode)
+                    specific_title = '%s_%s_%s_%s_fmax.png' % (title, onto, Type, mode)
                     print('\nPlotting %s\n' % title)
                     mkdir_p('./plots')
                     result_list = []
                     for method in methods:
-                        res = getprrc(onto, Type,mode, prrcfolder,method, results_folder)
+                        res = getprrc(onto, Type, mode, prrcfolder, method, results_folder)
                         result_list.append(res)
                     plotMultiple(specific_title,result_list,smooth)
     else:
