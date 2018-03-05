@@ -1,19 +1,19 @@
 ---
 assessment:
 # Predicition File (Only One  file allowed)
-        file:                                     ZZZ_1_9606.txt 
+        file:               ZZZ_1_9606.txt
 # Information Content File (MUST be made before running)
-        ic_path:                           ./ICTool/ia.map
+        ic_path:            ./ICTool/ia.map
 # OBO file used 
-        obo_path:                      ./assessment/go_20170429.obo
+        obo_path:           ../CAFA3_test_data/gene_ontology_edit.obo.2016-06-01
 # benchmark path
         benchmark_path:     ./assessment/benchmark/
 # results path
-        results_path:               ./results/
+        results_path:       ./results/
 # Verbose option (Y, N)
         verbose :                         Y
 # GAF file location                          
-        gaf_path :                     goa_human.gaf
+        gaf_path :                     goa_uniprot_all.gaf
 
 plot:
 # results path

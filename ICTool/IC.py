@@ -21,15 +21,12 @@ GAF21FIELDS = [
                 ]
 
 from Bio.UniProt  import GOA
-from dateutil     import parser
 import collections
 import math
 import pickle as cp
+
 import ICHelper
-import os
-import argparse
-import sys
-import yaml
+import helper
 
 
 def GAFtoDICT(gaf):
@@ -55,13 +52,12 @@ def GAFtoDICT(gaf):
             annotation['GO_ID'] = alt_id_to_id[annotation['GO_ID']]
         #print(id) # DEBUG
         annotation['DB:Reference'] = annotation['DB:Reference'][0]
-        annotation['Date'] = parser.parse(annotation['Date']).date()
         data[id] = annotation
         counter += 1
         
     return data
     
-
+   
 def ProteinToGO(data):
     '''
     This function creates a dictionary where key is a protein. 
@@ -375,7 +371,7 @@ def PhillipLordIC(data):
     
 def WyattClarkIC(data):
     '''
-    Calculate Wyatt Clark Information Content NEEDS WORK GONNA SKIP FOR A BIT
+    Calculate Wyatt Clark Information Content 
     
     Input:
     data            : Dictionary KEY: AnnotationID, VALUE: Annotation (Use GAFtoDICT to get)
@@ -398,57 +394,13 @@ def WyattClarkIC(data):
     return ontology_to_ia
     
 
-def extant_file(x):
-    '''
-    Description - extant?
-    
-    Input:
-    x   : 
-    
-    Output:
-    [0] :
-    '''
-    
-    if not os.path.isfile(x):
-        raise argparse.ArgumentTypeError("{0} does not exist".format(x))
-    else:
-        return(open(x,'r'))
-        
-        
-def read_config():
-    '''
-    Read in the configuration file
-    
-    Output:
-    [0] : String   OBO         file path
-    [1] : String   GAF         file path
-    '''
-    
-    parser = argparse.ArgumentParser(description='Precision- Recall assessment for CAFA predictions.', )
-    
-    parser.add_argument('config_stream', type = extant_file, help = 'Configuration file')            
-    args = parser.parse_args()
-    # Load config file to dictionary
-    try:
-        config_dict = yaml.load(args.config_stream)['assessment']
-    except yaml.YAMLError as exc:
-        print(exc)
-        sys.exit()
-    # Store config into itermediate variables    
-    obo_path = config_dict['obo_path']
-    gaf_path = config_dict['gaf_path']
-     
-    return(obo_path, gaf_path)
-
-    
-
 def main():
     '''
     Get a GAF, Convert, Calculate, and output. 
     '''
     
     # Use the assessment configuration file to grab the OBO file.
-    obo_path, gaf_path = read_config()
+    obo_path, gaf_path = helper.read_config_IC()
     ICHelper.setupGraphs(obo_path)
     gaf = GOA._gaf20iterator(open(gaf_path))
     data = GAFtoDICT(gaf)

@@ -28,35 +28,42 @@ def output(info, mode):
     
     '''
     
-    k = 2
+    k = 2.0
     # Intialize Variables
-    smin = 0.0
-    smin_threshold = 0.0
+    smin = float("inf")
+    smin_threshold = None
     RU   = []
     MI   = []
-    
+    S    = []
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
         
         threshold = numpy.around(threshold, decimals = 2)
         # Run S on given threshold
-        ru, mi = s_average(info, k, threshold, mode)
+        ru, mi = rumi_average(info, k, threshold, mode)
+        #print("Protein Totals")
+        #print(ru)
+        #print(mi)
         RU.append(ru)
         MI.append(mi)
         # Find the S-value for this particular threshold
         sval = s(k, ru, mi)
-        if sval is not None and sval <= smin: 
+        #print(sval)
+        S.append(sval)
+        if (sval is not None and sval <= smin): 
             smin = sval
             smin_threshold = threshold
+                        
+            #print("New Low")
     # Have found the Smin at this point       
-    return ([RU, MI, smin, smin_threshold])
+    return ([RU, MI, S, smin, smin_threshold])
 
 
 def ru(info, T, P):
     '''
     Calculate Remaining Uncertainity for a particular protein
     
-    Input:
+    Input:averaged
     T   : Set [ Truth      ]
     P   : Set [ Prediction ]
     
@@ -113,6 +120,8 @@ def s(k, ru, mi):
     Output:
     [0] : Float        s-value
     '''
+
+    s = 0.0
     
     if(ru is None or mi is None):
         s = None
@@ -121,9 +130,9 @@ def s(k, ru, mi):
     return s
     
 
-def s_average(info, k, threshold, mode):
+def rumi_average(info, k, threshold, mode):
     '''
-    Semantic Distance 
+    Remaing Uncertainity, Misinformation   
     
     At a particular threshold, averaged over all proteins
     
@@ -154,7 +163,11 @@ def s_average(info, k, threshold, mode):
                 P.add(term)       
         # Calculate ru & mi     
         r = ru(info, T, P)
+        #print("RU sum per protein")
+        #print(r)
         m = mi(info, T, P)
+        #print("MI sum per protein")
+        #print(m)
         # Check both to ensure calculation worked
         if r is not None and m is not None:
             RU += r
@@ -164,6 +177,7 @@ def s_average(info, k, threshold, mode):
     try:
         remain  = RU / info.count_above_threshold[threshold]
         misinfo = MI / info.count_above_threshold[threshold] 
+        
     except ZeroDivisionError:
         remain  = None
         misinfo = None

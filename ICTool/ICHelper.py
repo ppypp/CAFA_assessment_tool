@@ -8,9 +8,9 @@ import networkx as nx
 import pickle as cp
 ################################ GRAPH HELPER TOOLS ###############################
 # Some filenames
-ROOT_BPO='GO:0008150'
-ROOT_CCO='GO:0005575'
-ROOT_MFO='GO:0003674'
+ROOT_BPO = 'GO:0008150'
+ROOT_CCO = 'GO:0005575'
+ROOT_MFO = 'GO:0003674'
 
 
 def parseGOTerms(obo_path):

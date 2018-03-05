@@ -31,6 +31,7 @@ def output(info, mode):
     wfmax_threshold = 0.0
     WPR = []
     WRC = []
+    WF  = []
     
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
@@ -48,12 +49,12 @@ def output(info, mode):
                 wf = FMAX.f(wpr, wrc)
             except ZeroDivisionError:
                 wf = None
-                
-        if wf is not None and wf >= wfmax: ###########QUESTION##############
+        WF.append(wf)   
+        if wf is not None and wf >= wfmax: 
             wfmax = wf
             wfmax_threshold = threshold
     # Have found the WFmax at this point       
-    return ([WPR, WRC, wfmax, wfmax_threshold])
+    return ([WPR, WRC, WF, wfmax, wfmax_threshold])
     
     
 def WPRRC_average( info, threshold, mode):

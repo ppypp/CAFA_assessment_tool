@@ -28,7 +28,7 @@ def output(info, mode):
     fmax_threshold = 0.0
     PR = []
     RC = []
-    
+    F  = []
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
         
@@ -46,12 +46,12 @@ def output(info, mode):
                 fval = f(pr, rc)
             except ZeroDivisionError:
                 fval = None
-                
+        F.append(fval)        
         if fval is not None and fval >= fmax:
             fmax = fval
             fmax_threshold = threshold
     # Have found the Fmax at this point       
-    return ([PR, RC, fmax, fmax_threshold])
+    return ([PR, RC, F, fmax, fmax_threshold])
     
     
 def f(precision, recall):

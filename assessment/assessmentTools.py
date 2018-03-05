@@ -42,11 +42,11 @@ legal_species = [
  'SALTY',
  'CANAX',
  'SALCH']
-legal_types = ["type1","type2","all"]
-legal_subtypes = ["easy","hard"]
+legal_types = ["type1", "type2", "all"]
+legal_subtypes = ["easy", "hard"]
 # easy and hard are only in NK benchmarks!!!!
 legal_modes = ["full", "partial"]
-root_terms = ['GO:0008150','GO:0005575','GO:0003674']
+root_terms = ['GO:0008150', 'GO:0005575', 'GO:0003674']
 
 ######################################BENCHMARK START#################################
 def go_ontology_split(ontology):
@@ -92,9 +92,10 @@ def go_ontology_ancestors_split_write(obo_path):
     obo_bpo_out = open("%s_ancestors_bpo.txt" % (os.path.splitext(obo_path)[0]), "w")
     obo_cco_out = open("%s_ancestors_cco.txt" % (os.path.splitext(obo_path)[0]), "w")
     obo_mfo_out = open("%s_ancestors_mfo.txt" % (os.path.splitext(obo_path)[0]), "w")
-    obo_parser = OboIO.OboReader(open(obo_path))
-    go = obo_parser.read()
+    go = OboIO.OboReader(open(obo_path)).read()
+    # Split the OBO into the three namespaces 
     mfo_terms, bpo_terms, cco_terms = go_ontology_split(go)
+    
     for term in mfo_terms:
         ancestors = go.get_ancestors(term)
         obo_mfo_out.write("%s\t%s\n" % (term, ",".join(ancestors)))
