@@ -1,15 +1,15 @@
 ---
 assessment:
 # Predicition File (Only One  file allowed)
-        file:               ZZZ_1_9606.txt
+        file:                                                      /home/mcgerten/cafa3/CAFA_assessment_tool/ZZZ_1_9606.txt
 # Information Content File (MUST be made before running)
-        ic_path:            ./ICTool/ia.map
+        ic_path:                                             ./ICTool/ia.map
 # OBO file used 
-        obo_path:           ../CAFA3_test_data/gene_ontology_edit.obo.2016-06-01
+        obo_path:                                        ../CAFA3_test_data/gene_ontology_edit.obo.2016-06-01
 # benchmark path
-        benchmark_path:     ./assessment/benchmark/
+        benchmark_path:                       /home/mcgerten/cafa3/CAFA_assessment_tool/assessment/benchmark
 # results path
-        results_path:       ./results/
+        results_path:                                 ./results/
 # Verbose option (Y, N)
         verbose :                         Y
 # GAF file location                          

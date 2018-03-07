@@ -29,7 +29,7 @@ def get_namespace_index(namespace):
     elif namespace=='MFO' or namespace=='mfo':
         num = 1
     elif namespace=='CCO' or namespace=='cco':
-        num =2
+        num = 2
     else:
         raise ValueError("name space not found, check prediction files")
         print(namespace)

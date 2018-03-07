@@ -138,6 +138,7 @@ class result:
         print(self.NS)
         
         
+        
     def writeOut(self, Ontology, Type, Mode, coverage):
         '''
         Write data to file
@@ -146,89 +147,113 @@ class result:
         
         '''
         
+        if (Ontology == 'mfo'):
+            O = 'MFO'
+        elif (Ontology == 'bpo'):
+            O = 'BPO'
+        elif (Ontology == 'cco'):
+            O ='CCO'
+        else:
+            O = Ontology
+        Type = helper.typeConverter(Type) 
+        
         p = self.path
-        FMAXhandle  = open(p + "/%s_%s_%s_%s_%s%s_FMAX_results.txt" % (Ontology, self.taxon, Type, Mode, self.author, self.model,), 'w')
-        FMAXhandle.write('AUTHOR: %s   \n' % self.author)
-        FMAXhandle.write('MODEL: %s    \n' % self.model) 
-        FMAXhandle.write('KEYWORDS: %s \n' % self.keywords)  
-        FMAXhandle.write('Species: %s  \n' % self.taxon)
+        FMAXhandle  = open(p + "/{}_{}_{}_{}_{}{}_FMAX_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model), 'w')
+        FMAXhandle.write('!AUTHOR:      \t {} \n'.format(self.author))
+        FMAXhandle.write('!MODEL:       \t {} \n'.format(self.model))
+        FMAXhandle.write('!KEYWORDS:    \t {} \n'.format(self.keywords))
+        FMAXhandle.write('!SPECIES:     \t {} \n'.format(self.taxon))
+        FMAXhandle.write('!ONTOLOGY:    \t {} \n'.format(O))
+        FMAXhandle.write('!TYPE:        \t {} \n'.format(Type))
+        FMAXhandle.write('!MODE:        \t {} \n'.format(Mode))
+        FMAXhandle.write('<OPTIMAL:\t {:.6f} \n'.format(self.FMAX))
+        FMAXhandle.write('<THRESHOLD:\t {:.2f} \n'.format(self.FMAXThreshold))
+        FMAXhandle.write('<COVERAGE:\t {:.2f} \n'.format(coverage))
+
         
-        FMAXhandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ('Ontology', 'Type', 'Mode', 'FMAX'   , 'Threshold'       , 'Coverage' ))
-        FMAXhandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ( Ontology ,  Type ,  Mode , self.FMAX, self.FMAXThreshold, coverage   ))
-        
-        FMAXhandle.write(    '%s\t | %s\t%s\t%s\t\n' % ('Threshold', 'PR'          , 'RC'          , 'F'          )) 
+        FMAXhandle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'PR', 'RC', 'F')) 
         index = 0
         for threshold in numpy.arange(0.00, 1.01, 0.01, float):
             
             threshold = numpy.around(threshold, decimals = 2)
             try:
-                FMAXhandle.write('%s\t | %s\t%s\t%s\t\n' % (threshold  , self.PR[index], self.RC[index], self.F[index]))
+                FMAXhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold, self.PR[index], self.RC[index], self.F[index]))
             except IndexError:
                 pass
             index += 1
         
         FMAXhandle.close()
         
+        WFMAXhandle  = open(p + "/{}_{}_{}_{}_{}{}_WFMAX_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model), 'w')
+        WFMAXhandle.write('!AUTHOR:      \t {} \n'.format(self.author))
+        WFMAXhandle.write('!MODEL:       \t {} \n'.format(self.model))
+        WFMAXhandle.write('!KEYWORDS:    \t {} \n'.format(self.keywords))
+        WFMAXhandle.write('!SPECIES:     \t {} \n'.format(self.taxon))
+        WFMAXhandle.write('!ONTOLOGY:    \t {} \n'.format(O))
+        WFMAXhandle.write('!TYPE:        \t {} \n'.format(Type))
+        WFMAXhandle.write('!MODE:        \t {} \n'.format(Mode))
+        WFMAXhandle.write('<OPTIMAL:\t {:.6f} \n'.format(self.WFMAX))
+        WFMAXhandle.write('<THRESHOLD:\t {:.2f} \n'.format(self.WFMAXThreshold))
+        WFMAXhandle.write('<COVERAGE:\t {:.2f} \n'.format(coverage))        
         
-        WFMAXhandle = open(p + "/%s_%s_%s_%s_%s%s_WFMAX_results.txt" % (Ontology, self.taxon, Type, Mode, self.author, self.model,), 'w')
-        WFMAXhandle.write('AUTHOR: %s   \n' % self.author)
-        WFMAXhandle.write('MODEL: %s    \n' % self.model) 
-        WFMAXhandle.write('KEYWORDS: %s \n' % self.keywords)  
-        WFMAXhandle.write('Species: %s  \n' % self.taxon)
-        WFMAXhandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ('Ontology', 'Type', 'Mode', 'WFMAX'   , 'Threshold'        , 'Coverage' ))
-        WFMAXhandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ( Ontology ,  Type ,  Mode , self.WFMAX, self.WFMAXThreshold, coverage   ))
-        
-        WFMAXhandle.write(    '%s\t | %s\t%s\t%s\t\n' % ('Threshold', 'WPR', 'WRC', 'WF'))
+
+        WFMAXhandle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'WPR', 'WRC', 'WF'))
         index = 0
         for threshold in numpy.arange(0.00, 1.01, 0.01, float):
             
             threshold = numpy.around(threshold, decimals = 2)
             try:
-                WFMAXhandle.write('%s\t | %s\t%s\t%s\t\n' % (threshold  , self.WPR[index], self.WRC[index], self.WF[index]))
+                WFMAXhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold  , self.WPR[index], self.WRC[index], self.WF[index]))
             except IndexError:
                 pass
             index += 1
         
         WFMAXhandle.close()
         
+        SMINhandle  = open(p + "/{}_{}_{}_{}_{}{}_SMIN_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model), 'w')
+        SMINhandle.write('!AUTHOR:      \t {} \n'.format(self.author))
+        SMINhandle.write('!MODEL:       \t {} \n'.format(self.model))
+        SMINhandle.write('!KEYWORDS:    \t {} \n'.format(self.keywords))
+        SMINhandle.write('!SPECIES:     \t {} \n'.format(self.taxon))
+        SMINhandle.write('!ONTOLOGY:    \t {} \n'.format(O))
+        SMINhandle.write('!TYPE:        \t {} \n'.format(Type))
+        SMINhandle.write('!MODE:        \t {} \n'.format(Mode))
+        SMINhandle.write('<OPTIMAL:\t {:.6f} \n'.format(self.SMIN))
+        SMINhandle.write('<THRESHOLD:\t {:.2f} \n'.format(self.SMINThreshold))
+        SMINhandle.write('<COVERAGE:\t {:.2f} \n'.format(coverage))          
         
-        SMINhandle  = open(p + "/%s_%s_%s_%s_%s%s_SMIN_results.txt" % (Ontology, self.taxon, Type, Mode, self.author, self.model,), 'w')
-        SMINhandle.write('AUTHOR: %s   \n' % self.author)
-        SMINhandle.write('MODEL: %s    \n' % self.model) 
-        SMINhandle.write('KEYWORDS: %s \n' % self.keywords)  
-        SMINhandle.write('Species: %s  \n' % self.taxon)
-        SMINhandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ('Ontology', 'Type', 'Mode', 'SMIN'   , 'Threshold'       , 'Coverage' ))
-        SMINhandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ( Ontology ,  Type ,  Mode , self.SMIN, self.SMINThreshold, coverage   ))
-        
-        SMINhandle.write(    '%s\t | %s\t%s\t%s\t\n' % ('Threshold', 'RU', 'MI', 'S'))
+        SMINhandle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'RU', 'MI', 'S'))
         index = 0
         for threshold in numpy.arange(0.00, 1.01, 0.01, float):
             
             threshold = numpy.around(threshold, decimals = 2)
             try:
-                SMINhandle.write('%s\t | %s\t%s\t%s\t\n' % (threshold  , self.RU[index], self.MI[index], self.S[index]))
+                SMINhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold  , self.RU[index], self.MI[index], self.S[index]))
             except IndexError:
                 pass
             index += 1
         
         SMINhandle.close()
         
+        NSMINhandle  = open(p + "/{}_{}_{}_{}_{}{}_NSMIN_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model), 'w')
+        NSMINhandle.write('!AUTHOR:      \t {} \n'.format(self.author))
+        NSMINhandle.write('!MODEL:       \t {} \n'.format(self.model))
+        NSMINhandle.write('!KEYWORDS:    \t {} \n'.format(self.keywords))
+        NSMINhandle.write('!SPECIES:     \t {} \n'.format(self.taxon))
+        NSMINhandle.write('!ONTOLOGY:    \t {} \n'.format(O))
+        NSMINhandle.write('!TYPE:        \t {} \n'.format(Type))
+        NSMINhandle.write('!MODE:        \t {} \n'.format(Mode))
+        NSMINhandle.write('<OPTIMAL:\t {:.6f} \n'.format(self.NSMIN))
+        NSMINhandle.write('<THRESHOLD:\t {:.2f} \n'.format(self.NSMINThreshold))
+        NSMINhandle.write('<COVERAGE:\t {:.2f} \n'.format(coverage))          
         
-        NSMINhandle = open(p + "/%s_%s_%s_%s_%s%s_NSMIN_results.txt" % (Ontology, self.taxon, Type, Mode, self.author, self.model,), 'w')
-        NSMINhandle.write('AUTHOR: %s   \n' % self.author)
-        NSMINhandle.write('MODEL: %s    \n' % self.model) 
-        NSMINhandle.write('KEYWORDS: %s \n' % self.keywords)  
-        NSMINhandle.write('Species: %s  \n' % self.taxon)
-        NSMINhandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ('Ontology', 'Type', 'Mode', 'NSMIN'   , 'Threshold'        , 'Coverage' ))
-        NSMINhandle.write('%s\t%s\t%s\t | %s\t%s\t%s\n' % ( Ontology ,  Type ,  Mode , self.NSMIN, self.NSMINThreshold, coverage   ))
-        
-        NSMINhandle.write(    '%s\t | %s\t%s\t%s\t\n' % ('Threshold', 'NRU', 'NMI', 'NS'           ))
+        NSMINhandle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'NRU', 'NMI', 'NS' ))
         index = 0
         for threshold in numpy.arange(0.00, 1.01, 0.01, float):
             
             threshold = numpy.around(threshold, decimals = 2)
             try:
-                NSMINhandle.write('%s\t | %s\t%s\t%s\t\n' % (threshold  , self.NRU[index], self.NMI[index], self.NS[index]))
+                NSMINhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold  , self.NRU[index], self.NMI[index], self.NS[index]))
             except IndexError:
                 pass
             index += 1

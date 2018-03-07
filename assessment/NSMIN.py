@@ -34,7 +34,7 @@ def output(info, mode):
     smin_threshold = None
     RU   = []
     MI   = []
-    NS    = []
+    NS   = []
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
         
@@ -59,6 +59,31 @@ def output(info, mode):
     return ([RU, MI, NS, smin, smin_threshold])
 
 
+def norm(info, T, P):
+    '''
+
+    '''
+    # Sum of IC values of terms meeting criteria   
+    total = 0.0
+    # Sum the IC values of every element in T or P
+    # Add all truths
+    for term in T:
+        try:
+            total += info.ic[term][1]
+        except KeyError:
+            pass
+    # Add predictions that are not truths
+    for term in P:
+        if term not in T:
+            try:
+                total += info.ic[term][1]
+            except KeyError:
+                pass
+            
+    return total
+    
+    
+    
 def ru(info, T, P):
     '''
     Calculate Remaining Uncertainity for a particular protein
@@ -168,10 +193,19 @@ def rumi_average(info, k, threshold, mode):
         m = mi(info, T, P)
         #print("MI sum per protein")
         #print(m)
-        # Check both to ensure calculation worked
+        n = norm(info, T, P)
+        
         if r is not None and m is not None:
-            RU += r
-            MI += m 
+            try:
+                rn = r/n
+                mn = m/n
+            except ZeroDivisionError:
+                rn = None
+                mn = None
+        # Check both to ensure calculation worked
+        if rn is not None and mn is not None:
+            RU += rn
+            MI += mn 
             info.count_above_threshold[threshold] += 1
              
     try:
