@@ -24,9 +24,13 @@ from Bio.UniProt  import GOA
 import collections
 import math
 import pickle as cp
+import gc
+import os
+import argparse
+import sys
+import yaml
 
 import ICHelper
-import helper
 
 
 def GAFtoDICT(gaf):
@@ -34,7 +38,7 @@ def GAFtoDICT(gaf):
     Converts an imported GAF 2.1 file into a dictionary
     
     Input: 
-    gaf : GAF 2.1 object
+    gaf : GAF 2.1 object generator
     
     Ouput: 
     [0] : Dictionary KEY: AnnotationID, VALUE: Annotation 
@@ -44,17 +48,48 @@ def GAFtoDICT(gaf):
     alt_id_to_id = cp.load( open("ALTERNATE_ID_TO_ID.map", "rb" ) )
     counter = 1
     data = dict()
+    
     # For every annotation, create an id and add to data
     for annotation in gaf:
-        id = "annotation" + str( counter )
-        # If in alternate map, replace
-        if annotation['GO_ID'] in alt_id_to_id:
-            annotation['GO_ID'] = alt_id_to_id[annotation['GO_ID']]
-        #print(id) # DEBUG
-        annotation['DB:Reference'] = annotation['DB:Reference'][0]
-        data[id] = annotation
-        counter += 1
-        
+        #print annotation
+        #print gaf
+        if (counter % 1000 == 0):
+            print "I have done {} annotations".format(counter)
+        # ID
+        if( annotation['Evidence'] == 'EXP' or
+            annotation['Evidence'] == 'IDA' or
+            annotation['Evidence'] == 'IPI' or
+            annotation['Evidence'] == 'IMP' or
+            annotation['Evidence'] == 'IGI' or
+            annotation['Evidence'] == 'IEP' or
+            annotation['Evidence'] == 'TAS' or
+            annotation['Evidence'] == 'IC' 
+            ):
+            id = "annotation" + str( counter )
+            # GO ID
+            if annotation['GO_ID'] in alt_id_to_id:
+                GOID = alt_id_to_id[annotation['GO_ID']]
+            else:
+                GOID = annotation['GO_ID']
+            # DB:Reference
+            DBref       = annotation['DB:Reference'][0]
+            # Data need in protein
+            DB          = annotation['DB']
+            DB_Object   = annotation['DB_Object_ID']
+            Aspect      = annotation['Aspect']
+            
+            
+            data[id] = [GOID, DBref, DB, DB_Object, Aspect]
+            counter += 1
+            
+        else:
+            #print annotation['Evidence']
+            counter += 1
+            
+    # When done with gaf remove it    
+    del gaf
+    gc.collect()
+    print "I have done {} annotations".format(counter)
     return data
     
    
@@ -77,9 +112,9 @@ def ProteinToGO(data):
     all_GO = []
     
     for annotationID in data:
-        annotation = data[annotationID]
-        proteinID = annotation['DB'] + '_' + annotation['DB_Object_ID']
-        GO_term = annotation['GO_ID']
+        annotationList = data[annotationID]
+        proteinID = annotationList[2] + '_' + annotationList[4]
+        GO_term = annotationList[0]
         # If in alternate map, replace
         if GO_term in alt_id_to_id:
             GO_term = alt_id_to_id[GO_term]
@@ -89,8 +124,8 @@ def ProteinToGO(data):
         if proteinID not in protein_to_go:
             protein_to_go[proteinID] = []
         # Check if aspect has been added    
-        if [GO_term, annotation['Aspect']] not in protein_to_go[proteinID]:
-                protein_to_go[proteinID].append( [GO_term, annotation['Aspect']] )
+        if [GO_term, annotationList[4]] not in protein_to_go[proteinID]:
+                protein_to_go[proteinID].append( [GO_term, annotationList[4]] )
             
     return protein_to_go, list( set( all_GO ) )
 
@@ -266,22 +301,6 @@ def writeToFile(data, filename):
     f.close()
     
     
-def printDetailsAboutData(data):
-    '''
-    Helper Function that outputs info about data set
-    '''    
-    
-    print("Total number of annotations in the provided Database ",len(data))
-    prots=[]
-    ref=[]
-    for attnid in data:
-        annotation=data[attnid]
-        prots.append(annotation['DB']+"_"+annotation['DB_Object_ID'])
-        ref.append(annotation['DB:Reference'])
-    print("Total number of unique proteins in the provided Database ",len(set(prots)))
-    print("Total number of unique references in the provided Database ",len(set(ref)))
-
-
 def findFrequency(annotations, Protein_to_GO ):
     '''
     Find the frequency of annotations in the protein data
@@ -366,7 +385,7 @@ def PhillipLordIC(data):
         # Calculate PL IC and add to dictionary
         ic[term] = -math.log(float(PL_info[term]) / len(go_terms), 2)
     
-    return ic
+    return ic	
     
     
 def WyattClarkIC(data):
@@ -394,16 +413,63 @@ def WyattClarkIC(data):
     return ontology_to_ia
     
 
+def extant_file(x):
+    '''
+    Description - extant?
+    
+    Input:
+    x   : 
+    
+    Output:
+    [0] :
+    '''
+    
+    if not os.path.isfile(x):
+        raise argparse.ArgumentTypeError("{0} does not exist".format(x))
+    else:
+        return(open(x,'r'))
+        
+        
+def read_config():
+    '''
+    Read in the configuration file
+    
+    Output:
+    [0] : String   OBO         file path
+    [1] : String   GAF         file path
+    '''
+    
+    parser = argparse.ArgumentParser(description='Precision- Recall assessment for CAFA predictions.', )
+    
+    parser.add_argument('config_stream', type = extant_file, help = 'Configuration file')            
+    args = parser.parse_args()
+    # Load config file to dictionary
+    try:
+        config_dict = yaml.load(args.config_stream)['assessment']
+    except yaml.YAMLError as exc:
+        print(exc)
+        sys.exit()
+    # Store config into itermediate variables    
+    obo_path = config_dict['obo_path']
+    gaf_path = config_dict['gaf_path']
+     
+    return(obo_path, gaf_path)
+    
+
 def main():
     '''
     Get a GAF, Convert, Calculate, and output. 
     '''
     
     # Use the assessment configuration file to grab the OBO file.
-    obo_path, gaf_path = helper.read_config_IC()
+    obo_path, gaf_path = read_config()
+    print "Read the config"
     ICHelper.setupGraphs(obo_path)
+    print "Graphs are done"
     gaf = GOA._gaf20iterator(open(gaf_path))
+    print "I have made the GAF generator"
     data = GAFtoDICT(gaf)
+    print "I have made the dictionary"
     WyattClarkIC(data)
     print("IC values created")
     # WyattClarkIC stores to disk, we are done!
