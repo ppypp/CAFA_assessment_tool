@@ -14,6 +14,7 @@ import FMAX  as F
 import WFMAX as W
 import SMIN  as S
 import NSMIN as N
+import AUC   as A
 
 legal_species = [
 "all",
@@ -430,6 +431,8 @@ class Info:
             return S.output(info, mode)
         elif(tool == "NSMIN"):
             return N.output(info, mode)
+        elif(tool == "AUC"):
+            return A.output(info, mode)
         else:
             # Not a valid tool -> Throw error?
             return None

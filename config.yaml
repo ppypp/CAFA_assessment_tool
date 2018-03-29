@@ -13,7 +13,7 @@ assessment:
 # Verbose option (Y, N)
         verbose :                         Y
 # GAF file location                          
-        gaf_path :                     goa_uniprot_all.gaf
+        gaf_path :                     /home/mcgerten/cafa3/CAFA_assessment_tool/ICTool/uniprot_exp_20170118_withTAS.txt
 
 plot:
 # results path

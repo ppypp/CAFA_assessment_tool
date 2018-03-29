@@ -77,32 +77,32 @@ class result:
         threshold : Float
         '''
         if   evaluation == "FMAX":
-            self.FMAX           = value
+            self.FMAX           = float(value)
             self.PR             = subval1
             self.RC             = subval2
             self.F              = subval3
-            self.FMAXThreshold  = threshold
+            self.FMAXThreshold  = float(threshold)
         
         elif evaluation == "WFMAX":
-            self.WFMAX          = value
+            self.WFMAX          = float(value)
             self.WPR            = subval1
             self.WRC            = subval2
             self.WF             = subval3
-            self.WFMAXThreshold = threshold
+            self.WFMAXThreshold = float(threshold)
             
         elif evaluation == "SMIN":
-            self.SMIN           = value
+            self.SMIN           = float(value)
             self.RU             = subval1
             self.MI             = subval2
             self.S              = subval3
-            self.SMINThreshold  = threshold   
+            self.SMINThreshold  = float(threshold) 
             
         elif evaluation == "NSMIN":
-            self.NSMIN          = value
+            self.NSMIN          = float(value)
             self.NRU            = subval1
             self.NMI            = subval2
             self.NS             = subval3
-            self.NSMINThreshold = threshold   
+            self.NSMINThreshold = float(threshold)
             
         else: 
             # Do Nothing

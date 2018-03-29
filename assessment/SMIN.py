@@ -31,7 +31,7 @@ def output(info, mode):
     k = 2.0
     # Intialize Variables
     smin = float("inf")
-    smin_threshold = None
+    smin_threshold = 0.0
     RU   = []
     MI   = []
     S    = []

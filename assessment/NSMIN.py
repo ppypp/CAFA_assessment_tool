@@ -31,7 +31,7 @@ def output(info, mode):
     k = 2.0
     # Intialize Variables
     smin = float("inf")
-    smin_threshold = None
+    smin_threshold = 0.0
     RU   = []
     MI   = []
     NS   = []
@@ -194,7 +194,9 @@ def rumi_average(info, k, threshold, mode):
         #print("MI sum per protein")
         #print(m)
         n = norm(info, T, P)
-        
+        #print r
+        #print m 
+        #print n
         if r is not None and m is not None:
             try:
                 rn = r/n
