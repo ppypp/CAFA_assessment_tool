@@ -7,7 +7,7 @@ Created on Fri Feb 16 13:49:36 2018
 import numpy
 import helper
 # Will use parts of Fmax just using IC values
-import FMAX
+import assessment.FMAX as F
 
 
 
@@ -46,7 +46,7 @@ def output(info, mode):
             WRC.append(wrc)
             # Find the F-value for this particular threshold
             try:
-                wf = FMAX.f(wpr, wrc)
+                wf = F.f(wpr, wrc)
             except ZeroDivisionError:
                 wf = None
         WF.append(wf)   

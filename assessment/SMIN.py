@@ -149,18 +149,24 @@ def rumi_average(info, k, threshold, mode):
     
     RU = 0.0  
     MI = 0.0
-    info.count_above_threshold[threshold] = 0 # Ne in paper 
-    
+#    # Ne 
+#    countPredicted = 0 
+#    # N    
+#    countTotal     = 0
+    count          = 0
     for protein in info.predicted_bench:
         T = set()
         P = set()
         # Find T
         T = info.true_terms[protein]
+#        for term in info.true_terms[protein]:
+#            countTotal += 1
         # Find P (within threshold)
         for term in info.predicted_bench[protein]:
             # If it is above the threshold, add to the P set
             if info.predicted_bench[protein][term][0] >= threshold:
-                P.add(term)       
+                P.add(term) 
+#                countPredicted += 1
         # Calculate ru & mi     
         r = ru(info, T, P)
         #print("RU sum per protein")
@@ -173,10 +179,19 @@ def rumi_average(info, k, threshold, mode):
             RU += r
             MI += m 
             info.count_above_threshold[threshold] += 1
-             
+#        if (mode == "full"):
+#            # Count is the number of benchmark proteins
+#            count = countTotal
+#        else: # "partial"
+#            # Count is the number of predicted proteins
+#            count = countPredicted
+        if mode == 'partial':
+            count = info.count_predictions_in_benchmark
+        elif mode == 'full':
+            count = info.count_true_terms
     try:
-        remain  = RU / info.count_above_threshold[threshold]
-        misinfo = MI / info.count_above_threshold[threshold] 
+        remain  = RU / count
+        misinfo = MI / count
         
     except ZeroDivisionError:
         remain  = None

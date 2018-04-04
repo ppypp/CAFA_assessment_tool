@@ -230,26 +230,6 @@ def findFrequency(annotations, Protein_to_GO ):
     return count
 
 
-def countProteins(data):
-    '''
-    Find the total number of proteins
-    
-    Input:
-    data  : Dictionary KEY: AnnotationID, VALUE: Annotation (Use GAFtoDICT to get)
-    
-    Output: 
-    [0]   : Integer    # of proteins
-    '''
-    
-    allproteins = []
-    
-    for annotation in data:
-        allproteins.append(data[annotation]['DB'] + "_" + data[annotation]['DB_Object_ID'])
-        
-    return len(set(allproteins))
-
-
-
 def freqGO_TERM(data):
     '''
     Find the frequency of every GO Term
@@ -270,36 +250,6 @@ def freqGO_TERM(data):
             go_freq[data[annotation]['GO_ID']] = 1
     return go_freq
 
-
-def PhillipLordIC(data):
-    '''
-    Calculate Phillip Lord's Information Content
-    
-    Input: 
-    data           : Dictionary KEY: AnnotationID, VALUE: Annotation (Use GAFtoDICT to get)
-    
-    Output:
-    [0]            : Dictionary KEY: Node (Term), VALUE: IC]
-    '''
-    
-    go_terms = []
-    # Create a list of all terms
-    for annotationID in data:
-        #print(data[annotationID]["GO_ID"])
-        go_terms.append(data[annotationID]["GO_ID"])
-    # Put it in a collection    
-    PL_info = collections.Counter(go_terms)
-    
-    ic = dict()
-    
-    for term in PL_info:
-        #print(term , PL_info[term], float(PL_info[term]) / len(go_terms)) #DEBUG STATEMENT
-        #print(len(go_terms))
-        # Calculate PL IC and add to dictionary
-        ic[term] = -math.log(float(PL_info[term]) / len(go_terms), 2)
-    
-    return ic	
-    
     
 def WyattClarkIC(data):
     '''
@@ -364,7 +314,7 @@ def read_config():
         print(exc)
         sys.exit()
     # Store config into itermediate variables    
-    obo_path = config_dict['obo_path']
+    obo_path  = config_dict['obo_path']
     list_path = config_dict['gaf_path']
      
     return(obo_path, list_path)

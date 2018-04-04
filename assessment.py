@@ -109,7 +109,7 @@ if __name__=='__main__':
             if i.exist:
                 for mode in ['partial', 'full']:
                     #auc = i.check("AUC", mode)
-                    #print auc[3]
+                    print (mode)
                     fm = i.check("FMAX", mode)
                     r.update("FMAX", fm[0], fm[1], fm[2], fm[3], fm[4])
                     wfm = i.check("WFMAX", mode)

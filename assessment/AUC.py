@@ -6,6 +6,7 @@ Created on Fri Feb 16 13:38:18 2018
 """
 import numpy
 import helper
+from collections import defaultdict
 
 
 '''
@@ -21,37 +22,64 @@ def output(info, mode):
     mode   : Sting       {partial, full}
     
     Output:
-    [0]    : List[List[Float], List[Float], List[Float], Float]
+    [0]    : 
     '''
+    TermList, TrueList = configureLists(info, mode)
     # Intialize Variables
-    CP = 0
-    CN = 0
     
-    Truth     = set()
-    Predicted = set()
+    Truth = set()
     
-    terms = []   
-    areas = []
+    
+    
+    # Build truth set
+    for term in TrueList:    
+        Truth.add(term)
     
     gained = {} # The set  of terms that gained 10 Positive Annoted Sequences
     total = {} # The set of all terms \
     
-    
-    for term in total:
-        if term is not gained:
-            CN += 1
-        if term is gained:
-            CP += 1
-            
+    for threshold in numpy.arange(0.00, 1.01, 0.01, float):
+        # Reset for each threshold
+        CP = 0 # TP + FN
+        # Effectively true positives
+        
+        CN = 0 # FP + TN
+        # Effectively true negatives
+        
+        for term in TermList:
+            # For all terms
+            if term in Truth:
+                CP += 1
+            else: 
+                CN += 1
+        
+        terms = []
+        areas = []
+        Predicted = set()
+        
+        threshold = numpy.around(threshold, decimals = 2)
+        for term in TermList:
+        # If it is above the threshold, add to the P set
+            if TermList[term][1] >= threshold:
+                Predicted.add(term) 
+        # Now have A predicted set 
+        tp = TP(info, Truth, Predicted)
+        fp = FP(info, Truth, Predicted)                    
+                            
+                            
+        
+                
+        tpr = tp / CP # Sensitivity
+        fpr = fp / CN # Fall out
             
 
-    for term in gained:
-        # Calculate Area
-        area = numpy.trapz(TP)
-        # Add to list
-        terms.append(term)
-        areas.append(area)
-    return [terms, areas]
+        for term in gained:
+            # Calculate Area
+            area = numpy.trapz(TP)
+            # Add to list
+            terms.append(term)
+            areas.append(area)
+    return 
     
     
 def TP(info, T, P):
@@ -102,4 +130,24 @@ def FP(info, T, P):
                 #total += info.ic[term][1]
             except KeyError:
                 pass
-    return total            
+    return total         
+    
+def configureLists(info, mode):
+    '''
+    Want to first go through all predictions and make a list of Terms to Proteins
+    '''
+   
+    termList = defaultdict(list)
+    trueList = defaultdict(list)
+    
+    
+    for protein in info.data:
+        for term, confidence in protein:
+            termList[term].append({protein, confidence})
+        if (protein in info.true_terms[protein]):
+            for term in info.termterms[protein]:
+                trueList[term].append({protein, True})
+    # When done here, I will have a dictionary 
+    # KEY: GO term,  Value: LIST [ PROTEIN, CONFIDENCE]
+    # KEY: GO term,  Value: LIST [ PROTEIN, Truth]   
+    return termList, trueList

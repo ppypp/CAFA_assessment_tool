@@ -10,11 +10,11 @@ from collections import defaultdict
 import os
 from Ontology.IO import OboIO
 import helper
-import FMAX  as F
-import WFMAX as W
-import SMIN  as S
-import NSMIN as N
-import AUC   as A
+import assessment.FMAX  as F
+import assessment.WFMAX as W
+import assessment.SMIN  as S
+import assessment.NSMIN as N
+import assessment.AUC   as A
 
 legal_species = [
 "all",
