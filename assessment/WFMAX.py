@@ -8,7 +8,7 @@ import numpy
 import helper
 # Will use parts of Fmax just using IC values
 import assessment.FMAX as F
-
+from collections import defaultdict
 
 
 '''
@@ -120,7 +120,6 @@ def WPRRC(info, threshold, protein):
     [0]       : Float     Precision Value
     [1]       : Float     Recall value
     '''
-    
     # Initalize Variables
     total = 0.0        
     TP_total = 0.0      # True positive IC sum
@@ -138,7 +137,10 @@ def WPRRC(info, threshold, protein):
 
     # For every term related to the protein
     for term in info.predicted_bench[protein]:
+        
         if info.predicted_bench[protein][term][0] >= threshold:
+            #if protein == 'T96060009857' and threshold == .65:
+            #    print({protein, term, info.ic[term][1], threshold})
             # Add IC value to total
             try:
                 total += info.ic[term][1]

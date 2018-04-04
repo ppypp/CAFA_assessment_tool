@@ -228,7 +228,7 @@ def setupGraphs(obo_path):
     '''
     
     # Get needed information
-    mf_g, bp_g, cc_g, alt_id_to_id = parseGOTerms("../" + obo_path)
+    mf_g, bp_g, cc_g, alt_id_to_id = parseGOTerms(obo_path)
     # Save to file
     cp.dump(mf_g, open("MFO.graph", "wb"))
     cp.dump(bp_g, open("BPO.graph", "wb"))

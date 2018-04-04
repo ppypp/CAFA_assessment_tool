@@ -61,11 +61,11 @@ def LISTtoDICT(list_path):
         data[counter] = [Protein, GOTerm, Aspect]
         #print data[counter]
         if (counter % 1000 == 0):
-            print "I have done {} annotations".format(counter)
+            print ("I have done {} annotations".format(counter))
         counter += 1
  
 
-    print "I have done {} annotations".format(counter)
+    print ("I have done {} annotations".format(counter))
     return data
     
    
@@ -327,11 +327,11 @@ def main():
     
     # Use the assessment configuration file to grab the OBO file.
     obo_path, list_path = read_config()
-    print "Read the config"
+    print ("Read the config")
     ICHelper.setupGraphs(obo_path)
-    print "Graphs are done"
+    print ("Graphs are done")
     data = LISTtoDICT(list_path)
-    print "I have made the dictionary"
+    print ("I have made the dictionary")
     WyattClarkIC(data)
     print("IC values created")
     # WyattClarkIC stores to disk, we are done!

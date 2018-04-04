@@ -36,9 +36,9 @@ def output(info, mode):
         Truth.add(term)
     
     gained = {} # The set  of terms that gained 10 Positive Annoted Sequences
-    total = {} # The set of all terms \
-    
+    outThreshold = {}
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
+        threshold = numpy.around(threshold, decimals = 2)        
         # Reset for each threshold
         CP = 0 # TP + FN
         # Effectively true positives
@@ -55,9 +55,8 @@ def output(info, mode):
         
         terms = []
         areas = []
-        Predicted = set()
         
-        threshold = numpy.around(threshold, decimals = 2)
+        Predicted = set()
         for term in TermList:
         # If it is above the threshold, add to the P set
             if TermList[term][1] >= threshold:
@@ -79,7 +78,11 @@ def output(info, mode):
             # Add to list
             terms.append(term)
             areas.append(area)
-    return 
+            
+        out = {} # {Go:term, Area}
+        outThreshold[threshold].append(out) 
+    # Return all thresholds     
+    return outThreshold
     
     
 def TP(info, T, P):
