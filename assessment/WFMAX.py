@@ -111,7 +111,7 @@ def WPRRC_average( info, threshold, ontology, Type, mode):
     try:
         precision = WPR / info.count_above_threshold[threshold]   
     except ZeroDivisionError:
-        precision = None
+        precision = None 
         print("No prediction is made above the %.2f threshold\n" % threshold)
        
     return (precision, recall) 
