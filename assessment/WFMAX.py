@@ -8,13 +8,22 @@ import numpy
 import helper
 # Will use parts of Fmax just using IC values
 import assessment.FMAX as F
-from collections import defaultdict
+'''
+
+
+
+
+
+
+
+'''
+
 
 
 '''
 Weighted F maximun
 '''
-def output(info, mode):
+def output(info, ontology, Type, mode):
     '''
     Calculate WFmax
     
@@ -35,9 +44,10 @@ def output(info, mode):
     
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
+        
         threshold = numpy.around(threshold, decimals = 2)
         # Run PRRC on given threshold
-        wpr, wrc = WPRRC_average(info, threshold, mode)
+        wpr, wrc = WPRRC_average(info, threshold, ontology, Type, mode)
         if wpr is None:
             # No prediction above this threshold 
             break
@@ -57,7 +67,7 @@ def output(info, mode):
     return ([WPR, WRC, WF, wfmax, wfmax_threshold])
     
     
-def WPRRC_average( info, threshold, mode):
+def WPRRC_average( info, threshold, ontology, Type, mode):
     '''
     Calculate the overall PRRC of file
     
@@ -75,9 +85,9 @@ def WPRRC_average( info, threshold, mode):
     WPR = 0.0
     WRC = 0.0
     info.count_above_threshold[threshold] = 0
-
+   
     for protein in info.predicted_bench:
-        wpr, wrc = WPRRC(info, threshold, protein)
+        wpr, wrc = WPRRC(info, threshold, protein, ontology, Type, mode)
         if wpr is not None:
             WPR += wpr
             info.count_above_threshold[threshold] += 1
@@ -107,7 +117,7 @@ def WPRRC_average( info, threshold, mode):
     return (precision, recall) 
     
     
-def WPRRC(info, threshold, protein):
+def WPRRC(info, threshold, protein, ontology, Type, mode):
     '''
     Calculate the PRRC of a single protein
     
@@ -134,7 +144,8 @@ def WPRRC(info, threshold, protein):
             pass           
         
         
-
+    p = info.path
+    data  = open(p + "/WFMAX/{}_{}_{}_Threshold_{}_{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
     # For every term related to the protein
     for term in info.predicted_bench[protein]:
         
@@ -154,7 +165,13 @@ def WPRRC(info, threshold, protein):
                 except KeyError:
                     # When prediction has newer terms than IC 
                     pass
-                    
+        try:
+            data.write('{}\t {}\t {}\t {}\n'.format(protein, term, info.predicted_bench[protein][term][0], info.ic[term][1])) 
+        except KeyError:
+            # When prediction has newer terms than IC 
+            pass
+        
+    data.close()           
     # Find PR: TP / (TP + FP)
     try:
         precision = TP_total / total 

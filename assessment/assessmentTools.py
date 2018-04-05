@@ -249,7 +249,7 @@ class Info:
     ''' Holds all the stuff we need, allows for just importing once '''
     
    
-    def __init__(self, benchmark, os_prediction_path, obocounts, ic):
+    def __init__(self, benchmark, os_prediction_path, obocounts, ic, results_path):
         '''
         Initalize.
         
@@ -262,6 +262,7 @@ class Info:
         '''
         
         # Initialize variables
+        self.path                             = results_path
         self.exist                            = True
         self.ancestors                        = benchmark.ancestors
         self.true_terms                       = benchmark.true_terms
@@ -407,7 +408,7 @@ class Info:
         return(self.obsolete)
         
         
-    def check(self, tool, mode):
+    def check(self, tool, ontology, Type, mode):
         '''
         Effective main function, call this to get results
         
@@ -424,15 +425,15 @@ class Info:
         info = self
         
         if(tool == "FMAX"):
-            return F.output(info, mode)
+            return F.output(info, ontology, Type, mode)
         elif(tool == "WFMAX"):
-            return W.output(info, mode)
+            return W.output(info, ontology, Type, mode)
         elif(tool == "SMIN"):
-            return S.output(info, mode)
+            return S.output(info, ontology, Type, mode)
         elif(tool == "NSMIN"):
-            return N.output(info, mode)
+            return N.output(info, ontology, Type, mode)
         elif(tool == "AUC"):
-            return A.output(info, mode)
+            return A.output(info, ontology, Type, mode)
         else:
             # Not a valid tool -> Throw error?
             return None

@@ -12,7 +12,7 @@ import helper
 F maximum
 '''
 
-def output(info, mode):
+def output(info, ontology, Type, mode):
     ''' 
     Calculate the Fmax 
     
@@ -34,7 +34,7 @@ def output(info, mode):
         
         threshold = numpy.around(threshold, decimals = 2)
         # Run PRRC on given threshold
-        pr, rc = PRRC_average(info, threshold, mode)
+        pr, rc = PRRC_average(info, threshold, ontology, Type, mode)
         if pr is None:
             # No prediction above this threshold 
             break
@@ -114,7 +114,7 @@ def PRRC(info, threshold, protein):
     return (precision,recall)
         
         
-def PRRC_average(info, threshold, mode):
+def PRRC_average(info, threshold, ontology, Type, mode):
     '''
     Calculate the overall PRRC of file
     

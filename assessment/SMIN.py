@@ -13,7 +13,7 @@ import numpy
 import helper
 
 
-def output(info, mode):
+def output(info, ontology, Type, mode):
     '''
     Calculate Smin
     
@@ -40,7 +40,7 @@ def output(info, mode):
         
         threshold = numpy.around(threshold, decimals = 2)
         # Run S on given threshold
-        ru, mi = rumi_average(info, k, threshold, mode)
+        ru, mi = rumi_average(info, k, threshold, ontology, Type, mode)
         #print("Protein Totals")
         #print(ru)
         #print(mi)
@@ -130,7 +130,7 @@ def s(k, ru, mi):
     return s
     
 
-def rumi_average(info, k, threshold, mode):
+def rumi_average(info, k, threshold, ontology, Type, mode):
     '''
     Remaing Uncertainity, Misinformation   
     
@@ -178,7 +178,7 @@ def rumi_average(info, k, threshold, mode):
         if r is not None and m is not None:
             RU += r
             MI += m 
-            info.count_above_threshold[threshold] += 1
+            #info.count_above_threshold[threshold] += 1
 #        if (mode == "full"):
 #            # Count is the number of benchmark proteins
 #            count = countTotal

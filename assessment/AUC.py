@@ -13,7 +13,7 @@ from collections import defaultdict
 AUC By GOterm apparently
 '''
 
-def output(info, mode):
+def output(info, ontology, Type, mode):
     ''' 
 
     

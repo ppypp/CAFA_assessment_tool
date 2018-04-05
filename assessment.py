@@ -68,8 +68,7 @@ if __name__=='__main__':
     # Setup global variables
     helper.init(verbose)
     # Setup workspace
-    helper.mkdir_p(resultsFolder)
-    helper.mkdir_p(resultsFolder+'/rawdata/')
+
     print('\nEvaluating %s.\n' % f)
     # Get predictions
     all_prediction = GOPrediction()
@@ -88,11 +87,17 @@ if __name__=='__main__':
     print('MODEL: %s\n' % model)
     print('KEYWORDS: %s\n' % keywords)
     print('Species:%s\n' % taxon)
-    
+    rpath = resultsFolder + author
+    helper.mkdir_p(rpath)
+    helper.mkdir_p(rpath + '/FMAX/')
+    helper.mkdir_p(rpath +'/WFMAX/')
+    helper.mkdir_p(rpath +'/SMIN/')
+    helper.mkdir_p(rpath +'/NSMIN/')
     # Grab calculated IC
     ic = cp.load(open(ic_path,"rb"))
     # Make a result object for storing output
-    r = result(resultsFolder)
+    r = result(rpath)
+    
     r.info(author, model, keywords, taxon, f)
     
     for ontology in ['bpo','cco','mfo']:
@@ -104,19 +109,19 @@ if __name__=='__main__':
             if benchmark == None:
                 sys.stderr.write('No benchmark is available for the input species and type')
             # Create information object that passing necessary information to subroutines    
-            i = Info(benchmark, path, obocountDict[ontology], ic)
+            i = Info(benchmark, path, obocountDict[ontology], ic, rpath)
             # Check for success
             if i.exist:
                 for mode in ['partial', 'full']:
                     #auc = i.check("AUC", mode)
                     print (mode)
-                    fm = i.check("FMAX", mode)
+                    fm = i.check("FMAX", ontology, Type, mode)
                     r.update("FMAX", fm[0], fm[1], fm[2], fm[3], fm[4])
-                    wfm = i.check("WFMAX", mode)
+                    wfm = i.check("WFMAX", ontology, Type, mode)
                     r.update("WFMAX", wfm[0], wfm[1], wfm[2], wfm[3], wfm[4])
-                    sm = i.check("SMIN", mode)
+                    sm = i.check("SMIN", ontology, Type, mode)
                     r.update("SMIN", sm[0], sm[1], sm[2], sm[3], sm[4])
-                    nsm = i.check("NSMIN", mode)
+                    nsm = i.check("NSMIN", ontology, Type, mode)
                     r.update("NSMIN", nsm[0], nsm[1], nsm[2], nsm[3], nsm[4])
                     coverage = i.coverage()
                     # Write to file
