@@ -113,7 +113,7 @@ def go_ontology_ancestors_split_write(obo_path):
     return([len(bpo_terms), len(cco_terms), len(mfo_terms)])
     
     
-def read_benchmark(namespace, species, types, fullbenchmarkfolder, obopath):
+def read_benchmark(ontology, species, types, fullbenchmarkfolder, obopath):
     '''
     Read Benchmark.
     
@@ -130,33 +130,32 @@ def read_benchmark(namespace, species, types, fullbenchmarkfolder, obopath):
     '''
     # Ancestor files here are precomputed
     # Error Checking
-    legal_types = ["type1","type2","typex"]
-    legal_subtypes = ["easy","hard"]
-    legal_namespace = ["bpo","mfo","cco","hpo"] 
-    # fullbenchmarkfolder = './check/benchmark/'
-    if namespace not in legal_namespace:
+    legal_types     = ["type1","type2","typex"]
+    legal_subtypes  = ["easy","hard"]
+    legal_ontology = ["bpo","mfo","cco","hpo"] 
+    if ontology not in legal_ontology:
         sys.stderr.write("Namespace not accepted, choose from 'bpo', 'cco', 'mfo' and 'hpo'\n")
     elif (species not in legal_species) and (species not in legal_subtypes):
         sys.stderr.write('Species not accepted')
     elif types not in legal_types:
         sys.stderr.write('Type not accepted, choose from "type1","type2" and "typex"\n')
     else:
-        matchname = namespace+'_'+species+'_'+types+'.txt'
+        matchname = ontology + '_' + species + '_' + types + '.txt'
     # Generate ancestor files
     obocounts = go_ontology_ancestors_split_write(obopath)
     obocountDict = {'bpo':obocounts[0],'cco':obocounts[1],'mfo':obocounts[2]}
     # Ontology-specific calculations
-    if namespace == 'bpo':
-        full_benchmark_path = fullbenchmarkfolder+'/groundtruth/'+'leafonly_BPO.txt'
+    if   ontology == 'bpo':
+        full_benchmark_path = fullbenchmarkfolder + '/groundtruth/' + 'leafonly_BPO.txt'
         ancestor_path = os.path.splitext(obopath)[0]+"_ancestors_bpo.txt"
-    elif namespace =='cco':
-        full_benchmark_path = fullbenchmarkfolder+'/groundtruth/'+'leafonly_CCO.txt'
+    elif ontology =='cco':
+        full_benchmark_path = fullbenchmarkfolder + '/groundtruth/' + 'leafonly_CCO.txt'
         ancestor_path = os.path.splitext(obopath)[0]+"_ancestors_cco.txt"
-    elif namespace == 'mfo':
-        full_benchmark_path = fullbenchmarkfolder+'/groundtruth/'+'leafonly_MFO.txt'
+    elif ontology == 'mfo':
+        full_benchmark_path = fullbenchmarkfolder + '/groundtruth/' + 'leafonly_MFO.txt'
         ancestor_path = os.path.splitext(obopath)[0]+"_ancestors_mfo.txt"
         
-    benchmarkListPath = fullbenchmarkfolder+'/lists/'+matchname
+    benchmarkListPath = fullbenchmarkfolder + '/lists/' + matchname
     
     if os.path.isfile(benchmarkListPath) and os.path.getsize(benchmarkListPath)>0:
         handle = open(fullbenchmarkfolder+'/lists/'+matchname, 'r')
@@ -164,7 +163,7 @@ def read_benchmark(namespace, species, types, fullbenchmarkfolder, obopath):
         for line in handle:
             proteins.add(line.strip())
         handle.close()
-        tempfilename = 'temp_%s_%s_%s.txt' % (namespace, species, types)
+        tempfilename = 'temp_%s_%s_%s.txt' % (ontology, species, types)
         tempfile = open(fullbenchmarkfolder+'/'+tempfilename , 'w')
         for line in open(full_benchmark_path,'r'):
             protein = line.split('\t')[0]
@@ -392,9 +391,9 @@ class Info:
         '''
         
         if tc['term'] in self.true_terms[protein]:
-            return [tc['confidence'],True]
+            return [tc['confidence'], True]
         else:
-            return [tc['confidence'],False]
+            return [tc['confidence'], False]
             
         
     def getObsolete(self):
@@ -410,11 +409,13 @@ class Info:
         
     def check(self, tool, ontology, Type, mode):
         '''
-        Effective main function, call this to get results
+        Calls subroutines for specified tool
         
         Inputs:
-        tool  : {FMAX, WFMAX, SMIN, NSMIN}
-        mode  : {full, partial}
+        tool     : {FMAX, WFMAX, SMIN, NSMIN, AUC}
+        ontology : {BPO, CCO, MFO} #HPO?
+        Type     : {NK, LK}{Type1, Type2}
+        mode     : {full, partial}
         
         Output:
         [0]   : Float         Output Value
@@ -435,5 +436,4 @@ class Info:
         elif(tool == "AUC"):
             return A.output(info, ontology, Type, mode)
         else:
-            # Not a valid tool -> Throw error?
-            return None
+            raise ValueError("Not a valid tool")

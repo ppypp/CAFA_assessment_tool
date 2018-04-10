@@ -1,24 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 16 13:49:36 2018
-
-@author: mcgerten
-"""
 import numpy
 import helper
 # Will use parts of Fmax just using IC values
 import assessment.FMAX as F
-'''
-
-
-
-
-
-
-
-'''
-
-
 
 '''
 Weighted F maximun
@@ -28,8 +11,10 @@ def output(info, ontology, Type, mode):
     Calculate WFmax
     
     Input:
-    info   : Object
-    mode   : String     {partial, full}
+    info     : Object
+    ontology : String     {bpo, cco, mfo}
+    Type     : String     {type1, type2}
+    mode     : String     {partial, full}
     
     Output:
     [0]    : List[ List[Float], List[Float], Float, Float]
@@ -41,7 +26,6 @@ def output(info, ontology, Type, mode):
     WPR = []
     WRC = []
     WF  = []
-    
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
         
@@ -74,6 +58,8 @@ def WPRRC_average( info, threshold, ontology, Type, mode):
     Input:
     info      : Object
     threshold : Float      {0.0 -> 1.0}
+    ontology  : String     {bpo, cco, mfo}
+    Type      : String     {type1, type2}
     mode      : String     {partial, full}
     
     Output:
@@ -96,14 +82,14 @@ def WPRRC_average( info, threshold, ontology, Type, mode):
             
     if mode == 'partial':
         try:
-            recall = WRC/info.count_predictions_in_benchmark
+            recall = WRC / info.count_predictions_in_benchmark
         except ZeroDivisionError:
             recall = 0
             print("No protein in this predicted set became benchmarks\n")
             
     elif mode == 'full':
         try:
-            recall = WRC/info.count_true_terms
+            recall = WRC / info.count_true_terms
         except ZeroDivisionError:
             recall = 0
             print("No protein in this benchmark set\n")
@@ -130,6 +116,7 @@ def WPRRC(info, threshold, protein, ontology, Type, mode):
     [0]       : Float     Precision Value
     [1]       : Float     Recall value
     '''
+    
     # Initalize Variables
     total = 0.0        
     TP_total = 0.0      # True positive IC sum
@@ -144,20 +131,18 @@ def WPRRC(info, threshold, protein, ontology, Type, mode):
             pass           
         
         
-    p = info.path
-    data  = open(p + "/WFMAX/{}_{}_{}_Threshold_{}_{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
+    
+    data  = open(info.path + "/WFMAX/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
     # For every term related to the protein
     for term in info.predicted_bench[protein]:
         
         if info.predicted_bench[protein][term][0] >= threshold:
-            #if protein == 'T96060009857' and threshold == .65:
-            #    print({protein, term, info.ic[term][1], threshold})
             # Add IC value to total
             try:
                 total += info.ic[term][1]
             except KeyError:
                 # When prediction has newer terms than IC 
-                pass
+                print("There was a key error on {}".format(term))
             # If it is actually True, add its IC to TP_total
             if info.predicted_bench[protein][term][1] :
                 try:
@@ -166,11 +151,9 @@ def WPRRC(info, threshold, protein, ontology, Type, mode):
                     # When prediction has newer terms than IC 
                     pass
         try:
-            data.write('{}\t {}\t {}\t {}\n'.format(protein, term, info.predicted_bench[protein][term][0], info.ic[term][1])) 
+            data.write('{}\t {}\t {}\n'.format(term, info.predicted_bench[protein][term][0], info.ic[term][1])) 
         except KeyError:
-            # When prediction has newer terms than IC 
-            pass
-        
+            data.write('{}\t {}\t {}\n'.format(term, "KEY ERROR", "KEY ERROR"))  
     data.close()           
     # Find PR: TP / (TP + FP)
     try:

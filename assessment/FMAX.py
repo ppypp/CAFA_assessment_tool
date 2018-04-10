@@ -1,12 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 16 13:38:18 2018
-
-@author: mcgerten
-"""
 import numpy
 import helper
-
 
 '''
 F maximum
@@ -17,12 +10,15 @@ def output(info, ontology, Type, mode):
     Calculate the Fmax 
     
     Input:
-    info   : Object
-    mode   : Sting       {partial, full}
+    info     : Object
+    ontology : String     {bpo, cco, mfo}
+    Type     : String     {type1, type2}
+    mode     : String     {partial, full}
     
     Output:
     [0]    : List[List[Float], List[Float], Float, Float]
     '''
+    
     # Intialize Variables
     fmax = 0.0
     fmax_threshold = 0.0
@@ -72,48 +68,7 @@ def f(precision, recall):
         f = None
     return f
 
-
-def PRRC(info, threshold, protein):
-    '''
-    Calculate the PRRC of a single protein
-    
-    Input:
-    info       : Object
-    threshold  : Float      {0.0 -> 1.0}
-    protein    : 
-    
-    Output:
-    [0]        : Float
-    [1]        : Float
-    '''
-    
-    # Initalize Variables
-    TP = 0.0     # True positive
-    count = 0    # Count how many terms are above the threshold
-    TT_length = len(info.true_terms[protein]) # Number of True terms
-    
-    if(threshold == 0):
-        TP = TT_length
-        count = info.obocount
-    else:
-        # For every term related to the protein
-        for term in info.predicted_bench[protein]:
-         # If it is above the threshold, increment the count
-            if info.predicted_bench[protein][term][0] >= threshold:
-                count += 1
-                # If it is actually True, increment TP
-                if info.predicted_bench[protein][term][1] :
-                    TP += 1
-    # Find PR: TP / (TP + FP)
-    try:
-        precision = TP / count 
-    except ZeroDivisionError:
-        precision = None
-    # Find RC: TP (TP + FN)
-    recall = TP / TT_length
-    return (precision,recall)
-        
-        
+ 
 def PRRC_average(info, threshold, ontology, Type, mode):
     '''
     Calculate the overall PRRC of file
@@ -121,6 +76,8 @@ def PRRC_average(info, threshold, ontology, Type, mode):
     Input:
     info      : Object
     threshold : Float      {0.0 -> 1.0}
+    ontology  : String     {bpo, cco, mfo}
+    Type      : String     {type1, type2}
     mode      : String     {partial, full}
     
     Output:
@@ -134,7 +91,7 @@ def PRRC_average(info, threshold, ontology, Type, mode):
     info.count_above_threshold[threshold] = 0
 
     for protein in info.predicted_bench:
-        pr, rc = PRRC(info, threshold, protein)
+        pr, rc = PRRC(info, threshold, protein, ontology, Type, mode)
         if pr is not None:
             PR += pr
             info.count_above_threshold[threshold] += 1
@@ -162,3 +119,55 @@ def PRRC_average(info, threshold, ontology, Type, mode):
         print("No prediction is made above the %.2f threshold\n" % threshold)
        
     return (precision, recall)     
+    
+    
+def PRRC(info, threshold, protein, ontology, Type, mode):
+    '''
+    Calculate the PRRC of a single protein
+    
+    Input:
+    info       : Object
+    threshold  : Float      {0.0 -> 1.0}
+    protein    : 
+    
+    Output:
+    [0]        : Float
+    [1]        : Float
+    '''
+    
+    # Initalize Variables
+    TP = 0.0     # True positive
+    count = 0    # Count how many terms are above the threshold
+    TT_length = len(info.true_terms[protein]) # Number of True terms
+    
+    if(threshold == 0):
+        TP = TT_length
+        count = info.obocount
+    else:
+        data  = open(info.path + "/FMAX/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
+        # For every term related to the protein
+        for term in info.predicted_bench[protein]:
+         # If it is above the threshold, increment the count
+            if info.predicted_bench[protein][term][0] >= threshold:
+                count += 1
+                # If it is actually True, increment TP
+                if info.predicted_bench[protein][term][1] :
+                    TP += 1
+        try:
+            data.write('{}\t {}\t {}\n'.format(term, count, info.predicted_bench[protein][term][1])) 
+        except KeyError:
+            # When prediction has newer terms than IC 
+            pass
+    data.close() 
+    # Find PR: TP / (TP + FP)
+    try:
+        precision = TP / count 
+    except ZeroDivisionError:
+        precision = None
+    # Find RC: TP / (TP + FN)
+    try:
+        recall = TP / TT_length
+    except ZeroDivisionError:
+        recall = None
+    
+    return (precision,recall)

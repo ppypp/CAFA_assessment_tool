@@ -235,15 +235,20 @@ def setupGraphs(obo_path):
     cp.dump(cc_g, open("CCO.graph", "wb"))
     cp.dump(alt_id_to_id, open("ALTERNATE_ID_TO_ID.map", "wb"))
     # Load from file
-    mf_g = cp.load( open("MFO.graph", "rb" ) )
-    bp_g = cp.load( open("BPO.graph", "rb" ) )
-    cc_g = cp.load( open("CCO.graph", "rb" ) )
     # Find ancestors
-    mf_ancestors = findAllAncestorsForAllNodesForOntology("MFO.graph")
-    bp_ancestors = findAllAncestorsForAllNodesForOntology("BPO.graph")
-    cc_ancestors = findAllAncestorsForAllNodesForOntology("CCO.graph")
     # Save to File
+    # Clear Memory
+    mf_g = cp.load( open("MFO.graph", "rb" ) )
+    mf_ancestors = findAllAncestorsForAllNodesForOntology("MFO.graph")
     cp.dump(mf_ancestors, open("MFO_ANCESTORS.graph", "wb"))
-    cp.dump(bp_ancestors, open("BPO_ANCESTORS.graph", "wb"))
-    cp.dump(cc_ancestors, open("CCO_ANCESTORS.graph", "wb"))
+    del mf_g, mf_ancestors
     
+    bp_g = cp.load( open("BPO.graph", "rb" ) )
+    bp_ancestors = findAllAncestorsForAllNodesForOntology("BPO.graph")
+    cp.dump(bp_ancestors, open("BPO_ANCESTORS.graph", "wb"))
+    del bp_g, bp_ancestors
+    
+    cc_g = cp.load( open("CCO.graph", "rb" ) )
+    cc_ancestors = findAllAncestorsForAllNodesForOntology("CCO.graph")
+    cp.dump(cc_ancestors, open("CCO_ANCESTORS.graph", "wb"))
+    del cc_g, cc_ancestors

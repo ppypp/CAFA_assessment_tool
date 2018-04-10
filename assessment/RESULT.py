@@ -178,7 +178,7 @@ class result:
             threshold = numpy.around(threshold, decimals = 2)
             try:
                 FMAXhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold, self.PR[index], self.RC[index], self.F[index]))
-            except IndexError:
+            except (IndexError, TypeError):
                 pass
             index += 1
         
@@ -204,7 +204,7 @@ class result:
             threshold = numpy.around(threshold, decimals = 2)
             try:
                 WFMAXhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold  , self.WPR[index], self.WRC[index], self.WF[index]))
-            except IndexError:
+            except (IndexError, TypeError):
                 pass
             index += 1
         

@@ -155,6 +155,9 @@ def rumi_average(info, k, threshold, ontology, Type, mode):
 #    countTotal     = 0
     count          = 0
     for protein in info.predicted_bench:
+        p = info.path
+        data  = open(p + "/SMIN/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
+
         T = set()
         P = set()
         # Find T
@@ -165,6 +168,10 @@ def rumi_average(info, k, threshold, ontology, Type, mode):
         for term in info.predicted_bench[protein]:
             # If it is above the threshold, add to the P set
             if info.predicted_bench[protein][term][0] >= threshold:
+                try:                
+                    data.write('{}\t {}\t {}\n'.format(term, info.predicted_bench[protein][term][0], info.ic[term][1]))
+                except KeyError:
+                    data.write('{}\t {}\t {}\n'.format(term, "ERROR", "ERROR"))            
                 P.add(term) 
 #                countPredicted += 1
         # Calculate ru & mi     

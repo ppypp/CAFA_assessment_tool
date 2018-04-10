@@ -9,6 +9,7 @@ import argparse
 import sys
 import yaml
 import errno
+import numpy
 
 def init(v_choice):
     '''
@@ -91,7 +92,48 @@ def mkdir_p(path):
         else:
             raise
             
-                
+def mkdir_results(path):
+    mkdir_p(path + '/FMAX/')
+    mkdir_ontology(path + '/FMAX/')
+    mkdir_p(path + '/WFMAX/')
+    mkdir_ontology(path + '/WFMAX/')
+    mkdir_p(path + '/SMIN/')
+    mkdir_ontology(path + '/SMIN/')
+    mkdir_p(path + '/NSMIN/')
+    mkdir_ontology(path + '/NSMIN/')
+    mkdir_p(path + '/AUC/')
+    mkdir_ontology(path + '/AUC/')
+    
+                   
+def mkdir_ontology(path):
+    mkdir_p(path + '/bpo/')
+    mkdir_type(path + '/bpo/')
+    mkdir_p(path + '/cco/')
+    mkdir_type(path + '/cco/')
+    mkdir_p(path + '/mfo/')
+    mkdir_type(path + '/mfo/')
+    mkdir_p(path + '/hpo/')
+    mkdir_type(path + '/hpo/')
+
+def mkdir_type(path):
+    mkdir_p(path + '/type1/')
+    mkdir_mode(path + '/type1/')
+    mkdir_p(path + '/type2/')
+    mkdir_mode(path + '/type2/')
+    
+def mkdir_mode(path):   
+    mkdir_p(path + '/full/')
+    mkdir_threshold(path + '/full/')
+    mkdir_p(path + '/partial/')
+    mkdir_threshold(path + '/partial/')
+    
+def mkdir_threshold(path):
+    for threshold in numpy.arange(0.00, 1.01, 0.01, float):
+        threshold = numpy.around(threshold, decimals = 2)
+        mkdir_p('{}/{}/'.format(path, threshold))
+    
+    
+          
 def read_config_IC():
     '''
     Read in the configuration file for IC Tool
@@ -147,14 +189,14 @@ def read_config_MAIN():
         print(exc)
         sys.exit()
     # Store config into itermediate variables    
-    obo_path         = config_dict['obo_path']
-    benchmark_path   = config_dict['benchmark_path']
-    results_path     = config_dict['results_path']
-    f                = config_dict['file']
-    ic_path          = config_dict['ic_path']
-    verbose          = config_dict['verbose']
+    obo_path             = config_dict['obo_path']
+    ic_path              = config_dict['ic_path']
+    prediction_path      = config_dict['prediction_path']
+    benchmark_directory  = config_dict['benchmark_path']
+    results_directory    = config_dict['results_path']
+    verbose              = config_dict['verbose']
     
-    return(obo_path, benchmark_path, results_path, f, ic_path, verbose)
+    return(obo_path, ic_path, prediction_path, benchmark_directory, results_directory, verbose)
     
     
 def read_config_PLOT():

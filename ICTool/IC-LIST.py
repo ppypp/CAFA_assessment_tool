@@ -271,11 +271,20 @@ def WyattClarkIC(data):
     
     # Save IA Map
     cp.dump(ontology_to_ia, open("ia.map","wb"))
-    
+    convertToReadable(ontology_to_ia)
     #protInfoAccretion = calculateInformationAccretion( Prot_to_GO_Map_propagated, ontology_to_ia_map )
 
     return ontology_to_ia
-    
+ 
+ 
+def convertToReadable(ontology_to_ia):
+    '''
+    Convert Map to human readable Values to manually check accuracy
+    '''
+    data  = open("./IAmap.txt", 'w')
+    for term in ontology_to_ia:
+        data.write('{}\t {}\t {}\n'.format(term, ontology_to_ia[term][0], ontology_to_ia[term][1]))
+
 
 def extant_file(x):
     '''

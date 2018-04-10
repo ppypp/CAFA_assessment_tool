@@ -64,65 +64,71 @@ if __name__=='__main__':
     Main function that takes a predicition and returns calculated values
     '''
     # Read Config
-    obo_path, benchmarkFolder, resultsFolder, f , ic_path, verbose = helper.read_config_MAIN()
+    obo_path, ic_path, prediction_path, benchmark_directory, results_directory, verbose = helper.read_config_MAIN()
     # Setup global variables
     helper.init(verbose)
     # Setup workspace
-
-    print('\nEvaluating %s.\n' % f)
+    print('\nEvaluating %s.\n' % prediction_path)
     # Get predictions
     all_prediction = GOPrediction()
-    prediction_path = open(f, 'r')
-    all_prediction.read_and_split_and_write(obo_path, prediction_path)
-    info = [all_prediction.author, all_prediction.model, all_prediction.keywords, all_prediction.taxon]
+    prediction_file = open(prediction_path, 'r')
+    # Read in predictions, split by ontology
+    all_prediction.read_and_split_and_write(obo_path, prediction_file)
+    # Store values
+    author, model, keywords, taxon = all_prediction.author, all_prediction.model, all_prediction.keywords, all_prediction.taxon
     # Clear memory
     del all_prediction
     gc.collect()
-    # Store values
-    author = info[0]
-    model = info[1]
-    keywords = info[2][0] 
-    taxon = info[3]
+    # Print values
     print('AUTHOR: %s\n' % author)
     print('MODEL: %s\n' % model)
     print('KEYWORDS: %s\n' % keywords)
     print('Species:%s\n' % taxon)
-    rpath = resultsFolder + author
-    helper.mkdir_p(rpath)
-    helper.mkdir_p(rpath + '/FMAX/')
-    helper.mkdir_p(rpath +'/WFMAX/')
-    helper.mkdir_p(rpath +'/SMIN/')
-    helper.mkdir_p(rpath +'/NSMIN/')
+    # Make Results path
+    results_path = results_directory + author
+    # Make directory 
+    helper.mkdir_results(results_path)
     # Grab calculated IC
-    ic = cp.load(open(ic_path,"rb"))
+    ic_map = cp.load(open(ic_path,"rb"))
     # Make a result object for storing output
-    r = result(rpath)
-    
-    r.info(author, model, keywords, taxon, f)
-    
+    r = result(results_path)
+    # Populate result
+    r.info(author, model, keywords, taxon, prediction_path)
+    # For each ontology
     for ontology in ['bpo','cco','mfo']:
-        path = os.path.splitext(prediction_path.name)[0] + '_'+ontology.upper() + '.txt'
-        print('ontology: %s\n' % ontology)
+        path = os.path.splitext(prediction_file.name)[0] + '_' + ontology.upper() + '.txt'
+        
+        print('ontology: {}\n'.format(ontology))
+        # For each type (NK, LK)
         for Type in ['type1','type2']:
-            print('benchmark type:%s\n' % helper.typeConverter(Type))
-            benchmark, obocountDict = read_benchmark(ontology, taxon_name_converter(taxon), Type, benchmarkFolder, obo_path)
+            print('benchmark type:{}\n' .format(helper.typeConverter(Type)))
+            benchmark, obocountDict = read_benchmark(ontology, taxon_name_converter(taxon), Type, benchmark_directory, obo_path)
             if benchmark == None:
                 sys.stderr.write('No benchmark is available for the input species and type')
-            # Create information object that passing necessary information to subroutines    
-            i = Info(benchmark, path, obocountDict[ontology], ic, rpath)
+            # Create information object for passing necessary information to subroutines    
+            i = Info(benchmark, path, obocountDict[ontology], ic_map, results_path)
             # Check for success
             if i.exist:
+                
                 for mode in ['partial', 'full']:
-                    #auc = i.check("AUC", mode)
                     print (mode)
+                    
                     fm = i.check("FMAX", ontology, Type, mode)
                     r.update("FMAX", fm[0], fm[1], fm[2], fm[3], fm[4])
+                    #r.printOut()
+                    
                     wfm = i.check("WFMAX", ontology, Type, mode)
                     r.update("WFMAX", wfm[0], wfm[1], wfm[2], wfm[3], wfm[4])
+
                     sm = i.check("SMIN", ontology, Type, mode)
                     r.update("SMIN", sm[0], sm[1], sm[2], sm[3], sm[4])
+
                     nsm = i.check("NSMIN", ontology, Type, mode)
                     r.update("NSMIN", nsm[0], nsm[1], nsm[2], nsm[3], nsm[4])
+
+#                    auc = i.check("AUC", ontology, Type, mode)
+#                    r.update("AUC", auc[0], auc[1], auc[2], auc[3], auc[4])
+   
                     coverage = i.coverage()
                     # Write to file
                     r.writeOut(ontology, Type, mode, coverage) 
