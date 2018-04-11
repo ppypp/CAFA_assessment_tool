@@ -153,12 +153,12 @@ def PRRC(info, threshold, protein, ontology, Type, mode):
                 # If it is actually True, increment TP
                 if info.predicted_bench[protein][term][1] :
                     TP += 1
-        try:
-            data.write('{}\t {}\t {}\n'.format(term, count, info.predicted_bench[protein][term][1])) 
-        except KeyError:
-            # When prediction has newer terms than IC 
-            pass
-    data.close() 
+                try:
+                    data.write('{}\t {}\t {}\n'.format(term, count, info.predicted_bench[protein][term][1])) 
+                except KeyError:
+                    # When prediction has newer terms than IC 
+                    data.write('{}\t {}\t {}\n'.format(term, count, "KEY ERROR")) 
+        data.close() 
     # Find PR: TP / (TP + FP)
     try:
         precision = TP / count 

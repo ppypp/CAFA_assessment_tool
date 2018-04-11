@@ -12,7 +12,7 @@ assessment:
 # Information Content File (MUST be made before running)
         ic_path:                                             ./ICTool/ia.map
 # GAF path                          
-        gaf_path :                                         /home/mcgerten/cafa3/CAFA_assessment_tool/ICTool/uniprot_exp_20170118_withoutTAS.txt
+        gaf_path :                                         /home/mcgerten/cafa3/CAFA3_test_data/uniprot_exp_20170118_withoutTAS.txt
 
 # Verbose option (Y, N)
         verbose :                                           Y

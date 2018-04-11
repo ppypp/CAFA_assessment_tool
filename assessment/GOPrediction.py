@@ -1,22 +1,17 @@
-#!/usr/bin/env python3
-
 import re
 import os
 from collections import defaultdict
 from Ontology.IO import OboIO
 
 
-###################### What does this do #####################################
 pr_field         = re.compile("^PR=[0,1]\.[0-9][0-9];$")
 rc_field         = re.compile("^RC=[0,1]\.[0-9][0-9]$")
-# Fix to add HP ontology 2014-1-9
 go_field         = re.compile("^(GO|HP):[0-9]{5,7}$")
-# Fix to add EFI targets 2014-1-9
 target_field     = re.compile("^(T|EFI)[0-9]{5,20}$")
 confidence_field = re.compile("^[0,1]\.[0-9][0-9]$")
 
-# Legal states: the CAFA prediction records fields, and their order. KEYWORDS and ACCURACY are
-# optional
+# Legal states: the CAFA prediction records fields, and their order. 
+# KEYWORDS and ACCURACY are optional
 legal_states1 = ["author", "model", "keywords",
                  "accuracy", "go_prediction", "end"]
 legal_states2 = ["author", "model", "keywords", "go_prediction", "end"]
@@ -24,15 +19,20 @@ legal_states3 = ["author", "model", "go_prediction", "end"]
 legal_states4 = ["go_prediction"]
 
 legal_keywords = [
-    "sequence alignment", "sequence-profile alignment", "profile-profile alignment", "phylogeny",
+    "sequence alignment", "sequence-profile alignment", 
+    "profile-profile alignment", "phylogeny",
     "sequence properties",
-    "physicochemical properties", "predicted properties", "protein interactions", "gene expression",
+    "physicochemical properties", "predicted properties", 
+    "protein interactions", "gene expression",
     "mass spectrometry",
-    "genetic interactions", "protein structure", "literature", "genomic context", "synteny",
+    "genetic interactions", "protein structure", "literature", 
+    "genomic context", "synteny",
     "structure alignment",
-    "comparative model", "predicted protein structure", "de novo prediction", "machine learning",
+    "comparative model", "predicted protein structure", 
+    "de novo prediction", "machine learning",
     "genome environment",
-    "operon", "ortholog", "paralog", "homolog", "hidden markov model", "clinical data", "genetic data",
+    "operon", "ortholog", "paralog", "homolog", 
+    "hidden markov model", "clinical data", "genetic data",
     "natural language processing", "other functional information"
 ]
 
@@ -42,8 +42,10 @@ class GOPrediction:
     A class for reading and storing CAFA GO predictions
 
     in self.read(pred_path) , pred_path should be a handle
-    The read function should read in from a RAW prediction file submitted by a CAFA participanting team (post format check though)
-    The split function will perform spliting the prediction by ontology, which used to be a separate function in preprocess.py
+    The read function should read in from a RAW prediction file submitted 
+    by a CAFA participanting team (post format check though)
+    The split function will perform spliting the prediction by ontology,
+    which used to be a separate function in preprocess.py
     """
 
     def __init__(self):
@@ -61,7 +63,8 @@ class GOPrediction:
         self.taxon    = None
         # self.data is a dictionary
         # key: protein ID
-        # value: [{'term':go_term_1, 'threshold': threshold_1},...,{'term':go_term_n, 'threshold': threshold_n}]
+        # value: [{'term':go_term_1, 'threshold': threshold_1},...,
+        # {'term':go_term_n, 'threshold': threshold_n}]
         self.data     = defaultdict(list)
         
         

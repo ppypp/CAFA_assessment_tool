@@ -23,49 +23,20 @@ class result:
         results_path : String       The directory to store results in
         '''
         self.path           = results_path         
+
+        self.Opt            = 0.0
+        self.Value1         = []
+        self.Value2         = []
+        self.Value3         = []
+        self.OptThreshold   = 0.0
         
-        
-        # FMAX
-        self.FMAX           = 0.0
-        self.PR             = []
-        self.RC             = []
-        self.F              = []
-        self.FMAXThreshold  = 0.0
-        
-        # Weighted FMAX
-        self.WFMAX          = 0.0
-        self.WPR            = []
-        self.WRC            = []
-        self.WF             = []
-        self.WFMAXThreshold = 0.0
-        
-        # SMIN
-        self.SMIN           = 0.0
-        self.RU             = []
-        self.MI             = []
-        self.S              = []
-        self.SMINThreshold  = 0.0
-        
-        # Normalized SMIN        
-        self.NSMIN          = 0.0
-        self.NRU            = []
-        self.NMI            = []
-        self.NS             = []
-        self.NSMINThreshold = 0.0
-        
-        # Raw data
-        # Turth values (per protein?)
-        self.TP             = 0 #= defaultdict()#Key : Protein, Value: List of Terms
-        self.FN             = 0 #= defaultdict()#Key : Protein, Value: List of Terms
-        self.FP             = 0 #= defaultdict()#Key : Protein, Value: List of Terms
-        self.TN             = 0 #= defaultdict()#Key : Protein, Value: List of Terms
         self.coverage       = 0.0
         
         
         
         
         
-    def update(self, evaluation, subval1, subval2, subval3, value, threshold):
+    def update(self, subval1, subval2, subval3, value, threshold):
         '''
         Stores the outpu of each metric in a single object
         
@@ -74,39 +45,16 @@ class result:
         value     : Float
         subval1   : List[Float]
         subval2   : List[Float]
+        subval3   : List[Float]
         threshold : Float
         '''
-        if   evaluation == "FMAX":
-            self.FMAX           = float(value)
-            self.PR             = subval1
-            self.RC             = subval2
-            self.F              = subval3
-            self.FMAXThreshold  = float(threshold)
-        
-        elif evaluation == "WFMAX":
-            self.WFMAX          = float(value)
-            self.WPR            = subval1
-            self.WRC            = subval2
-            self.WF             = subval3
-            self.WFMAXThreshold = float(threshold)
+
+        self.Opt            = float(value)
+        self.Value1         = subval1
+        self.Value2         = subval2
+        self.Value3         = subval3
+        self.OptThreshold   = float(threshold)
             
-        elif evaluation == "SMIN":
-            self.SMIN           = float(value)
-            self.RU             = subval1
-            self.MI             = subval2
-            self.S              = subval3
-            self.SMINThreshold  = float(threshold) 
-            
-        elif evaluation == "NSMIN":
-            self.NSMIN          = float(value)
-            self.NRU            = subval1
-            self.NMI            = subval2
-            self.NS             = subval3
-            self.NSMINThreshold = float(threshold)
-            
-        else: 
-            # Do Nothing
-            return
             
     def info(self, author, model, keywords, taxon, predictionFile):
         '''
@@ -118,35 +66,13 @@ class result:
         self.taxon          = taxon
         self.predictionFile = predictionFile
         
-                
-        
-    def printOut(self):
+
+    def writeOut(self, Ontology, Type, Mode, tool):
         '''
-        Print Data to console
-        '''
-        print('FMAX: %s\n' % self.FMAX)
-        print('threshold giving FMAX: %s\n' % self.FMAXThreshold)
-        print(self.F)
-        print('WFMAX: %s\n' % self.WFMAX)
-        print('threshold giving WFMAX: %s\n' % self.WFMAXThreshold)
-        print(self.WF)
-        print('SMIN: %s\n' % self.SMIN)
-        print('threshold giving SMIN: %s\n' % self.SMINThreshold)
-        print(self.S)
-        print('NSMIN: %s\n' % self.NSMIN)
-        print('threshold giving NSMIN: %s\n' % self.NSMINThreshold)
-        print(self.NS)
-        
-        
-        
-    def writeOut(self, Ontology, Type, Mode, coverage):
-        '''
-        Write data to file
-        
-        We want a file per evaluation
         
         '''
         
+        # Set Ontology to correct formating
         if (Ontology == 'mfo'):
             O = 'MFO'
         elif (Ontology == 'bpo'):
@@ -155,109 +81,35 @@ class result:
             O ='CCO'
         else:
             O = Ontology
+        # Set Type to correct format
         Type = helper.typeConverter(Type) 
         
         p = self.path
-        FMAXhandle  = open(p + "/{}_{}_{}_{}_{}{}_FMAX_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model), 'w')
-        FMAXhandle.write('!AUTHOR:      \t {} \n'.format(self.author))
-        FMAXhandle.write('!MODEL:       \t {} \n'.format(self.model))
-        FMAXhandle.write('!KEYWORDS:    \t {} \n'.format(self.keywords))
-        FMAXhandle.write('!SPECIES:     \t {} \n'.format(self.taxon))
-        FMAXhandle.write('!ONTOLOGY:    \t {} \n'.format(O))
-        FMAXhandle.write('!TYPE:        \t {} \n'.format(Type))
-        FMAXhandle.write('!MODE:        \t {} \n'.format(Mode))
-        FMAXhandle.write('<OPTIMAL:\t {:.6f} \n'.format(self.FMAX))
-        FMAXhandle.write('<THRESHOLD:\t {:.2f} \n'.format(self.FMAXThreshold))
-        FMAXhandle.write('<COVERAGE:\t {:.2f} \n'.format(coverage))
+        handle  = open(p + "/{}_{}_{}_{}_{}{}_{}_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model, tool), 'w')
+        handle.write('!AUTHOR:      \t {}  \n'.format(self.author))
+        handle.write('!MODEL:       \t {}  \n'.format(self.model))
+        handle.write('!KEYWORDS:    \t {}  \n'.format(self.keywords))
+        handle.write('!SPECIES:     \t {}  \n'.format(self.taxon))
+        handle.write('!ONTOLOGY:    \t {}  \n'.format(O))
+        handle.write('!TYPE:        \t {}  \n'.format(Type))
+        handle.write('!MODE:        \t {}  \n'.format(Mode))
+        handle.write('<OPTIMAL:\t {:.6f}   \n'.format(self.Opt))
+        handle.write('<THRESHOLD:\t {:.2f} \n'.format(self.OptThreshold))
+        handle.write('<COVERAGE:\t {:.2f}  \n'.format(self.coverage))
 
         
-        FMAXhandle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'PR', 'RC', 'F')) 
+        handle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'PR', 'RC', 'F')) 
         index = 0
         for threshold in numpy.arange(0.00, 1.01, 0.01, float):
             
             threshold = numpy.around(threshold, decimals = 2)
             try:
-                FMAXhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold, self.PR[index], self.RC[index], self.F[index]))
+                handle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold, self.Value1[index], self.Value2[index], self.Value3[index]))
             except (IndexError, TypeError):
                 pass
             index += 1
         
-        FMAXhandle.close()
-        
-        WFMAXhandle  = open(p + "/{}_{}_{}_{}_{}{}_WFMAX_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model), 'w')
-        WFMAXhandle.write('!AUTHOR:      \t {} \n'.format(self.author))
-        WFMAXhandle.write('!MODEL:       \t {} \n'.format(self.model))
-        WFMAXhandle.write('!KEYWORDS:    \t {} \n'.format(self.keywords))
-        WFMAXhandle.write('!SPECIES:     \t {} \n'.format(self.taxon))
-        WFMAXhandle.write('!ONTOLOGY:    \t {} \n'.format(O))
-        WFMAXhandle.write('!TYPE:        \t {} \n'.format(Type))
-        WFMAXhandle.write('!MODE:        \t {} \n'.format(Mode))
-        WFMAXhandle.write('<OPTIMAL:\t {:.6f} \n'.format(self.WFMAX))
-        WFMAXhandle.write('<THRESHOLD:\t {:.2f} \n'.format(self.WFMAXThreshold))
-        WFMAXhandle.write('<COVERAGE:\t {:.2f} \n'.format(coverage))        
-        
-
-        WFMAXhandle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'WPR', 'WRC', 'WF'))
-        index = 0
-        for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-            
-            threshold = numpy.around(threshold, decimals = 2)
-            try:
-                WFMAXhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold  , self.WPR[index], self.WRC[index], self.WF[index]))
-            except (IndexError, TypeError):
-                pass
-            index += 1
-        
-        WFMAXhandle.close()
-        
-        SMINhandle  = open(p + "/{}_{}_{}_{}_{}{}_SMIN_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model), 'w')
-        SMINhandle.write('!AUTHOR:      \t {} \n'.format(self.author))
-        SMINhandle.write('!MODEL:       \t {} \n'.format(self.model))
-        SMINhandle.write('!KEYWORDS:    \t {} \n'.format(self.keywords))
-        SMINhandle.write('!SPECIES:     \t {} \n'.format(self.taxon))
-        SMINhandle.write('!ONTOLOGY:    \t {} \n'.format(O))
-        SMINhandle.write('!TYPE:        \t {} \n'.format(Type))
-        SMINhandle.write('!MODE:        \t {} \n'.format(Mode))
-        SMINhandle.write('<OPTIMAL:\t {:.6f} \n'.format(self.SMIN))
-        SMINhandle.write('<THRESHOLD:\t {:.2f} \n'.format(self.SMINThreshold))
-        SMINhandle.write('<COVERAGE:\t {:.2f} \n'.format(coverage))          
-        
-        SMINhandle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'RU', 'MI', 'S'))
-        index = 0
-        for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-            
-            threshold = numpy.around(threshold, decimals = 2)
-            try:
-                SMINhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold  , self.RU[index], self.MI[index], self.S[index]))
-            except IndexError:
-                pass
-            index += 1
-        
-        SMINhandle.close()
-        
-        NSMINhandle  = open(p + "/{}_{}_{}_{}_{}{}_NSMIN_results.txt".format(O, self.taxon, Type, Mode, self.author, self.model), 'w')
-        NSMINhandle.write('!AUTHOR:      \t {} \n'.format(self.author))
-        NSMINhandle.write('!MODEL:       \t {} \n'.format(self.model))
-        NSMINhandle.write('!KEYWORDS:    \t {} \n'.format(self.keywords))
-        NSMINhandle.write('!SPECIES:     \t {} \n'.format(self.taxon))
-        NSMINhandle.write('!ONTOLOGY:    \t {} \n'.format(O))
-        NSMINhandle.write('!TYPE:        \t {} \n'.format(Type))
-        NSMINhandle.write('!MODE:        \t {} \n'.format(Mode))
-        NSMINhandle.write('<OPTIMAL:\t {:.6f} \n'.format(self.NSMIN))
-        NSMINhandle.write('<THRESHOLD:\t {:.2f} \n'.format(self.NSMINThreshold))
-        NSMINhandle.write('<COVERAGE:\t {:.2f} \n'.format(coverage))          
-        
-        NSMINhandle.write('{}\t {}\t {}\t {}\n'.format('Threshold', 'NRU', 'NMI', 'NS' ))
-        index = 0
-        for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-            
-            threshold = numpy.around(threshold, decimals = 2)
-            try:
-                NSMINhandle.write('>{:.2f}\t {:.6f}\t {:.6f}\t {:.6f}\n'.format(threshold  , self.NRU[index], self.NMI[index], self.NS[index]))
-            except IndexError:
-                pass
-            index += 1
-        
-        NSMINhandle.close()        
+        handle.close()       
         
         
+    

@@ -145,7 +145,8 @@ def configureLists(info, mode):
     
     
     for protein in info.data:
-        for term, confidence in protein:
+        for term in protein:
+            confidence = 0 # FIX THIS#################################################
             termList[term].append({protein, confidence})
         if (protein in info.true_terms[protein]):
             for term in info.termterms[protein]:
@@ -153,4 +154,4 @@ def configureLists(info, mode):
     # When done here, I will have a dictionary 
     # KEY: GO term,  Value: LIST [ PROTEIN, CONFIDENCE]
     # KEY: GO term,  Value: LIST [ PROTEIN, Truth]   
-    return termList, trueList
+    return (termList, trueList)
