@@ -133,6 +133,7 @@ def WPRRC(info, threshold, protein, ontology, Type, mode):
         
     
     data  = open(info.path + "/WFMAX/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
+    truth = open(info.path + "/WFMAX/{}/{}/{}/{}/{}_truth.txt".format(ontology, Type, mode, threshold, protein), 'w')
     # For every term related to the protein
     for term in info.predicted_bench[protein]:
         
@@ -140,21 +141,19 @@ def WPRRC(info, threshold, protein, ontology, Type, mode):
             # Add IC value to total
             try:
                 total += info.ic[term][1]
+                data.write('{}\t {}\t {}\n'.format(term, info.predicted_bench[protein][term][0], info.ic[term][1])) 
             except KeyError:
-                # When prediction has newer terms than IC 
                 print("There was a key error on {}".format(term))
+                data.write('{}\t {}\t {}\n'.format(term, "KEY ERROR", "KEY ERROR"))  
             # If it is actually True, add its IC to TP_total
             if info.predicted_bench[protein][term][1] :
                 try:
                     TP_total += info.ic[term][1]
+                    truth.write('{}\t {}\t {}\n'.format(term, info.predicted_bench[protein][term][0], info.ic[term][1])) 
                 except KeyError:
-                    # When prediction has newer terms than IC 
-                    pass
-        try:
-            data.write('{}\t {}\t {}\n'.format(term, info.predicted_bench[protein][term][0], info.ic[term][1])) 
-        except KeyError:
-            data.write('{}\t {}\t {}\n'.format(term, "KEY ERROR", "KEY ERROR"))  
-    data.close()           
+                    truth.write('{}\t {}\t {}\n'.format(term, "KEY ERROR", "KEY ERROR"))  
+    data.close()  
+    truth.close()         
     # Find PR: TP / (TP + FP)
     try:
         precision = TP_total / total 

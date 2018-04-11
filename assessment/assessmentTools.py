@@ -43,11 +43,12 @@ legal_species = [
  'SALTY',
  'CANAX',
  'SALCH']
-legal_types = ["type1", "type2", "all"]
-legal_subtypes = ["easy", "hard"]
-# easy and hard are only in NK benchmarks!!!!
-legal_modes = ["full", "partial"]
+
 root_terms = ['GO:0008150', 'GO:0005575', 'GO:0003674']
+legal_ontology = ["bpo", "mfo", "cco", "hpo"] 
+legal_types     = ["type1", "type2", "typex"]
+legal_subtypes  = ["easy", "hard"]
+legal_modes = ["full", "partial"]
 
 ######################################BENCHMARK START#################################
 def go_ontology_split(ontology):
@@ -55,7 +56,7 @@ def go_ontology_split(ontology):
     Split an GO obo file into three ontologies
     
     Input:
-    ontology :
+    ontology : 
     
     Output:
     [0]      : Set   MFO Terms
@@ -68,12 +69,12 @@ def go_ontology_split(ontology):
     cco_terms = set({})
     
     for node in ontology.get_ids(): # loop over node IDs and alt_id's
-        if ontology.namespace[node] == "molecular_function": # F
-            mfo_terms.add(node)
-        elif ontology.namespace[node] == "biological_process": # P
+        if ontology.namespace[node] == "biological_process": # P
             bpo_terms.add(node)
         elif ontology.namespace[node] == "cellular_component": # C
             cco_terms.add(node)
+        elif ontology.namespace[node] == "molecular_function": # F
+            mfo_terms.add(node)
         else:
             raise(ValueError,"%s has no namespace" % node)
     return (mfo_terms, bpo_terms, cco_terms)
@@ -90,49 +91,48 @@ def go_ontology_ancestors_split_write(obo_path):
     [0]      : List [Length of BPO, Length of CCO, Length of MFO]
     """
     
-    obo_bpo_out = open("%s_ancestors_bpo.txt" % (os.path.splitext(obo_path)[0]), "w")
-    obo_cco_out = open("%s_ancestors_cco.txt" % (os.path.splitext(obo_path)[0]), "w")
-    obo_mfo_out = open("%s_ancestors_mfo.txt" % (os.path.splitext(obo_path)[0]), "w")
     go = OboIO.OboReader(open(obo_path)).read()
     # Split the OBO into the three namespaces 
     mfo_terms, bpo_terms, cco_terms = go_ontology_split(go)
-    
-    for term in mfo_terms:
-        ancestors = go.get_ancestors(term)
-        obo_mfo_out.write("%s\t%s\n" % (term, ",".join(ancestors)))
+    # BPO
+    obo_bpo_out = open("{}_ancestors_bpo.txt".format(os.path.splitext(obo_path)[0]), "w")
     for term in bpo_terms:
         ancestors = go.get_ancestors(term)
         obo_bpo_out.write("%s\t%s\n" % (term, ",".join(ancestors)))
+    obo_bpo_out.close()
+    # CCO
+    obo_cco_out = open("{}_ancestors_cco.txt".format(os.path.splitext(obo_path)[0]), "w")
     for term in cco_terms:
         ancestors = go.get_ancestors(term)
         obo_cco_out.write("%s\t%s\n" % (term, ",".join(ancestors)))
-
+    obo_cco_out.close()    
+    # MFO
+    obo_mfo_out = open("{}_ancestors_mfo.txt".format(os.path.splitext(obo_path)[0]), "w") 
+    for term in mfo_terms:
+        ancestors = go.get_ancestors(term)
+        obo_mfo_out.write("%s\t%s\n" % (term, ",".join(ancestors)))    
     obo_mfo_out.close()
-    obo_bpo_out.close()
-    obo_cco_out.close()
+    
     return([len(bpo_terms), len(cco_terms), len(mfo_terms)])
     
     
-def read_benchmark(ontology, species, types, fullbenchmarkfolder, obopath):
+def read_benchmark(ontology, species, types, benchmark_directory, obopath):
     '''
     Read Benchmark.
     
     Input:
-    namespace           :
-    species             :
-    types               :
-    fullbenchmarkfolder :
-    obopath             :
+    ontology            : String        {bpo, cco, mfo, hpo}
+    species             : String        List above of accepted options
+    types               : String        {full, partial}
+    fullbenchmarkfolder : String        Directory
+    obopath             : String        File 
     
     Output:
     [0]                 : Benchmark
     [1]                 : obocountDict 
     '''
-    # Ancestor files here are precomputed
+    
     # Error Checking
-    legal_types     = ["type1","type2","typex"]
-    legal_subtypes  = ["easy","hard"]
-    legal_ontology = ["bpo","mfo","cco","hpo"] 
     if ontology not in legal_ontology:
         sys.stderr.write("Namespace not accepted, choose from 'bpo', 'cco', 'mfo' and 'hpo'\n")
     elif (species not in legal_species) and (species not in legal_subtypes):
@@ -140,31 +140,32 @@ def read_benchmark(ontology, species, types, fullbenchmarkfolder, obopath):
     elif types not in legal_types:
         sys.stderr.write('Type not accepted, choose from "type1","type2" and "typex"\n')
     else:
+        # Create name for finding benchmark file
         matchname = ontology + '_' + species + '_' + types + '.txt'
     # Generate ancestor files
     obocounts = go_ontology_ancestors_split_write(obopath)
     obocountDict = {'bpo':obocounts[0],'cco':obocounts[1],'mfo':obocounts[2]}
     # Ontology-specific calculations
     if   ontology == 'bpo':
-        full_benchmark_path = fullbenchmarkfolder + '/groundtruth/' + 'leafonly_BPO.txt'
-        ancestor_path = os.path.splitext(obopath)[0]+"_ancestors_bpo.txt"
-    elif ontology =='cco':
-        full_benchmark_path = fullbenchmarkfolder + '/groundtruth/' + 'leafonly_CCO.txt'
-        ancestor_path = os.path.splitext(obopath)[0]+"_ancestors_cco.txt"
+        full_benchmark_path = benchmark_directory + '/groundtruth/' + 'leafonly_BPO.txt'
+        ancestor_path = os.path.splitext(obopath)[0] + "_ancestors_bpo.txt"
+    elif ontology == 'cco':
+        full_benchmark_path = benchmark_directory + '/groundtruth/' + 'leafonly_CCO.txt'
+        ancestor_path = os.path.splitext(obopath)[0] + "_ancestors_cco.txt"
     elif ontology == 'mfo':
-        full_benchmark_path = fullbenchmarkfolder + '/groundtruth/' + 'leafonly_MFO.txt'
-        ancestor_path = os.path.splitext(obopath)[0]+"_ancestors_mfo.txt"
+        full_benchmark_path = benchmark_directory + '/groundtruth/' + 'leafonly_MFO.txt'
+        ancestor_path = os.path.splitext(obopath)[0] + "_ancestors_mfo.txt"
         
-    benchmarkListPath = fullbenchmarkfolder + '/lists/' + matchname
-    
+    benchmarkListPath = benchmark_directory + '/lists/' + matchname
+    # If the List file exists and has data
     if os.path.isfile(benchmarkListPath) and os.path.getsize(benchmarkListPath)>0:
-        handle = open(fullbenchmarkfolder+'/lists/'+matchname, 'r')
+        handle    = open(benchmark_directory + '/lists/' + matchname, 'r')
         proteins  = set()
         for line in handle:
             proteins.add(line.strip())
         handle.close()
         tempfilename = 'temp_%s_%s_%s.txt' % (ontology, species, types)
-        tempfile = open(fullbenchmarkfolder+'/'+tempfilename , 'w')
+        tempfile = open(benchmark_directory + '/' + tempfilename , 'w')
         for line in open(full_benchmark_path,'r'):
             protein = line.split('\t')[0]
             if protein in proteins:
@@ -172,7 +173,7 @@ def read_benchmark(ontology, species, types, fullbenchmarkfolder, obopath):
         tempfile.close()
         bench = benchmark(ancestor_path, tempfile.name)
         bench.propagate()
-        os.remove(tempfile.name)
+        #os.remove(tempfile.name)
     else:
         print('Benchmark set is empty.\n')
         bench = None

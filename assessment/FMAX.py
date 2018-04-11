@@ -1,13 +1,13 @@
-import numpy
-import helper
+'''
+Class to claculate the F maximum
+'''
 
-'''
-F maximum
-'''
+import numpy
+
 
 def output(info, ontology, Type, mode):
     ''' 
-    Calculate the Fmax 
+    Main Method 
     
     Input:
     info     : Object
@@ -16,7 +16,7 @@ def output(info, ontology, Type, mode):
     mode     : String     {partial, full}
     
     Output:
-    [0]    : List[List[Float], List[Float], Float, Float]
+    [0]      : List[List[Float], List[Float], Float, Float]
     '''
     
     # Intialize Variables
@@ -33,6 +33,7 @@ def output(info, ontology, Type, mode):
         pr, rc = PRRC_average(info, threshold, ontology, Type, mode)
         if pr is None:
             # No prediction above this threshold 
+            fval = None
             break
         else:
             PR.append(pr)
@@ -63,7 +64,7 @@ def f(precision, recall):
     '''
     
     try:
-        f = (2*precision*recall) / (precision + recall)
+        f = (2 * precision * recall) / (precision + recall)
     except ZeroDivisionError:
         f = None
     return f

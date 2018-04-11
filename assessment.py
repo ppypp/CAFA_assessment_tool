@@ -88,7 +88,6 @@ if __name__=='__main__':
                     #auc = i.check("AUC", ontology, Type, mode)
                     #r.update("AUC", auc[0], auc[1], auc[2], auc[3], auc[4])
                     #r.writeOut(ontology, Type, mode, coverage, "AUC")
-                    
-                    
+               
             del i
             gc.collect()
