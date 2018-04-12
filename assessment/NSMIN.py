@@ -85,9 +85,9 @@ def rumi_average(info, k, threshold, ontology, Type, mode):
     At a particular threshold, averaged over all proteins
     
     Input:
-    info       : 
-    k          : Integer  
-    threshold  : Float      
+    info       : Object
+    k          : Integer    {2}
+    threshold  : Float      {0.0 -> 1.0}
     ontology   : String     {bpo, cco, mfo}
     Type       : String     {type1, type2}
     mode       : String     {partial, full}

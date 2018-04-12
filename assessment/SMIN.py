@@ -146,25 +146,7 @@ def rumi_average(info, k, threshold, ontology, Type, mode):
     MI = 0.0
     count          = 0
     for protein in info.predicted_bench:
-        data  = open(info.path + "/SMIN/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
-
-        T = set()
-        P = set()
-        # Find T
-        T = info.true_terms[protein]
-        # Find P (within threshold)
-        for term in info.predicted_bench[protein]:
-            # If it is above the threshold, add to the P set
-            if info.predicted_bench[protein][term][0] >= threshold:
-                try:                
-                    data.write('{}\t {}\t {}\n'.format(term, info.predicted_bench[protein][term][0], info.ic[term][1]))
-                except KeyError:
-                    data.write('{}\t {}\t {}\n'.format(term, "ERROR", "ERROR"))            
-                P.add(term) 
-        data.close()
-        # Calculate ru & mi     
-        r = ru(info, T, P)
-        m = mi(info, T, P)
+        r, m = rumi(info, threshold, protein, ontology, Type, mode)
         # Check both to ensure calculation worked
         if r is not None and m is not None:
             RU += r
@@ -184,3 +166,44 @@ def rumi_average(info, k, threshold, ontology, Type, mode):
         print("No prediction is made above the %.2f threshold\n" % threshold)
             
     return remain, misinfo        
+    
+    
+def rumi(info, threshold, protein, ontology, Type, mode):
+    '''
+    Calculate the RUMI of a single protein
+    
+    Input:
+    info       : Object
+    threshold  : Float      {0.0 -> 1.0}
+    protein    : String     
+    ontology   : String     {bpo, cco, mfo}
+    Type       : String     {type1, type2}
+    mode       : String     {partial, full}
+    
+    Output:
+    [0]        : Float
+    [1]        : Float
+    '''
+    
+    data = open(info.path + "/SMIN/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
+    
+    T = set()
+    P = set()
+    # Find T
+    T = info.true_terms[protein]
+    # Find P (within threshold)
+    for term in info.predicted_bench[protein]:
+        # If it is above the threshold, add to the P set
+        if info.predicted_bench[protein][term][0] >= threshold:
+            try:                
+                data.write('{}\t {}\t {}\n'.format(term, info.predicted_bench[protein][term][0], info.ic[term][1]))
+            except KeyError:
+                data.write('{}\t {}\t {}\n'.format(term, "ERROR", "ERROR"))            
+            P.add(term) 
+    data.close()
+    # Calculate ru & mi     
+    r = ru(info, T, P)
+    m = mi(info, T, P)
+    
+    return r, m
+    
