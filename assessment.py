@@ -57,6 +57,7 @@ if __name__=='__main__':
                 sys.stderr.write('No benchmark is available for the input species and type')
             # Create information object for passing necessary information to subroutines    
             i = Info(benchmark, path, obocountDict[ontology], ic_map, results_path)
+            i.writeBenchwithIC(ontology, Type)
             # Check for success
             if i.exist:
                 # For each mode

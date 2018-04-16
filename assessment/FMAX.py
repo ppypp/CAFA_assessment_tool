@@ -21,7 +21,7 @@ def output(info, ontology, Type, mode):
     
     # Intialize Variables
     fmax = 0.0
-    fmax_threshold = 0.0
+    fmax_threshold = -1.0
     PR = []
     RC = []
     F  = []
@@ -34,7 +34,7 @@ def output(info, ontology, Type, mode):
         if pr is None:
             # No prediction above this threshold 
             fval = None
-            break
+            pass
         else:
             PR.append(pr)
             RC.append(rc)
@@ -141,9 +141,11 @@ def PRRC(info, threshold, protein, ontology, Type, mode):
     count = 0    # Count how many terms are above the threshold
     TT_length = len(info.true_terms[protein]) # Number of True terms
     
+    
     if(threshold == 0):
         TP = TT_length
         count = info.obocount
+        
     else:
         data  = open(info.path + "/FMAX/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
         # For every term related to the protein
@@ -151,14 +153,16 @@ def PRRC(info, threshold, protein, ontology, Type, mode):
          # If it is above the threshold, increment the count
             if info.predicted_bench[protein][term][0] >= threshold:
                 count += 1
-                # If it is actually True, increment TP
-                if info.predicted_bench[protein][term][1] :
-                    TP += 1
+                # Write to file
                 try:
                     data.write('{}\t {}\t {}\n'.format(term, count, info.predicted_bench[protein][term][1])) 
                 except KeyError:
-                    # When prediction has newer terms than IC 
                     data.write('{}\t {}\t {}\n'.format(term, count, "KEY ERROR")) 
+                
+                # If it is actually True, increment TP
+                if info.predicted_bench[protein][term][1] :
+                    TP += 1
+
         data.close() 
     # Find PR: TP / (TP + FP)
     try:

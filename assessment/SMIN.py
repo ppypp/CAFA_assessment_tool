@@ -38,7 +38,7 @@ def output(info, ontology, Type, mode):
         if ru is None:
             # No prediction above this threshold 
             sval = None
-            break
+            pass
         else:
             RU.append(ru)
             MI.append(mi)
@@ -142,9 +142,9 @@ def rumi_average(info, k, threshold, ontology, Type, mode):
     [1]        : Float    Misinformation
     '''
     
-    RU = 0.0  
-    MI = 0.0
-    count          = 0
+    RU    = 0.0  
+    MI    = 0.0
+    count = 0
     for protein in info.predicted_bench:
         r, m = rumi(info, threshold, protein, ontology, Type, mode)
         # Check both to ensure calculation worked
@@ -181,8 +181,8 @@ def rumi(info, threshold, protein, ontology, Type, mode):
     mode       : String     {partial, full}
     
     Output:
-    [0]        : Float
-    [1]        : Float
+    [0]        : Float      Remaining Uncertainity
+    [1]        : Float      Misinformation
     '''
     
     data = open(info.path + "/SMIN/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')

@@ -1,16 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 16 13:38:18 2018
-
-@author: mcgerten
-"""
 import numpy
 import helper
 from collections import defaultdict
 
 
 '''
-AUC By GOterm apparently
+AUC By GOterm NEEDS A LOT OF HELP
 '''
 
 def output(info, ontology, Type, mode):

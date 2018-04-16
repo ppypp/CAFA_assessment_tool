@@ -22,7 +22,7 @@ def output(info, ontology, Type, mode):
     
     # Intialize Variables
     wfmax = 0.0
-    wfmax_threshold = 0.0
+    wfmax_threshold = -1.0
     WPR = []
     WRC = []
     WF  = []
@@ -34,7 +34,8 @@ def output(info, ontology, Type, mode):
         wpr, wrc = WPRRC_average(info, threshold, ontology, Type, mode)
         if wpr is None:
             # No prediction above this threshold 
-            break
+            wf = None
+            pass
         else:
             WPR.append(wpr)
             WRC.append(wrc)
@@ -126,8 +127,8 @@ def WPRRC(info, threshold, protein, ontology, Type, mode):
     for term in info.true_terms[protein]:
         try: 
             TT_sum += info.ic[term][1] 
+        # When prediction has newer terms than IC 
         except KeyError:
-            # When prediction has newer terms than IC 
             pass           
         
         
@@ -136,7 +137,7 @@ def WPRRC(info, threshold, protein, ontology, Type, mode):
     truth = open(info.path + "/WFMAX/{}/{}/{}/{}/{}_truth.txt".format(ontology, Type, mode, threshold, protein), 'w')
     # For every term related to the protein
     for term in info.predicted_bench[protein]:
-        
+        # If the term is above the threshold
         if info.predicted_bench[protein][term][0] >= threshold:
             # Add IC value to total
             try:

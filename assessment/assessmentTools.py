@@ -20,7 +20,7 @@ legal_species = [
 "all",
 "eukarya",
 "prokarya",
-'HELPY',
+ 'HELPY',
  'ECOLI',
  'RAT',
  'DANRE',
@@ -69,7 +69,7 @@ def go_ontology_split(ontology):
     cco_terms = set({})
     
     for node in ontology.get_ids(): # loop over node IDs and alt_id's
-        if ontology.namespace[node] == "biological_process": # P
+        if ontology.namespace[node]   == "biological_process": # P
             bpo_terms.add(node)
         elif ontology.namespace[node] == "cellular_component": # C
             cco_terms.add(node)
@@ -231,11 +231,14 @@ class benchmark:
         for protein in self.true_base_terms:
             for term in self.true_base_terms[protein]:
                 try:
+                    
                     ancestors = self.ancestors[term].difference(root_terms)    
-                
+                    
                 except KeyError:
                     sys.stderr.write("%s not found \n" % term) 
+                # Add the term    
                 self.true_terms[protein].add(term)
+                # Set Union 
                 self.true_terms[protein] |= ancestors
         
 
@@ -248,7 +251,29 @@ class benchmark:
 class Info:
     ''' Holds all the stuff we need, allows for just importing once '''
     
-   
+    def writeBenchwithIC(self, ontology, Type):
+        '''
+        Write to file the benchmark IC values for manual validation of methods
+        '''
+        
+        data  = open(self.path + '/benchmarkIC_{}_{}.txt'.format(ontology, Type), 'w')
+        
+        for protein in self.true_terms:
+            for term in self.true_terms[protein]:
+                try:
+                    data.write('{}\t {}\t {}\n'.format( protein, term, self.ic[term][1])) 
+                except KeyError:
+                    data.write('{}\t {}\t {}\n'.format( protein, term, "Key Error"))
+        
+        data.close() 
+        
+        #data  = open(self.path + '/test.txt', 'w')
+        
+        #data.write('{}\n'.format(self.ancestors)) 
+                       
+        #data.close()
+        
+        
     def __init__(self, benchmark, os_prediction_path, obocounts, ic, results_path):
         '''
         Initalize.
@@ -294,9 +319,11 @@ class Info:
             for inrec in open(os_prediction_path,'r'):
                 fields = [i.strip() for i in inrec.split()]
                 self.data[fields[0]].append({'term': fields[1], 'confidence': float(fields[2])})
+
             
             # Propagated prediction
             for protein in self.data:
+                # Take only protein that are in benchmark
                 if self.true_terms[protein]:
                     '''
                     benchmark.true_terms[protein] not an empty set
@@ -336,7 +363,7 @@ class Info:
                 print("No protein in this predicted set became a benchmark\n")
         else:
             # File does not exist
-            self.exist=False
+            self.exist = False
             print('No prediction made in this ontology.\n')
             
             

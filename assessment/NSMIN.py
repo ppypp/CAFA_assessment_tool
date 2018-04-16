@@ -53,10 +53,19 @@ def output(info, ontology, Type, mode):
     return ([RU, MI, NS, nsmin, nsmin_threshold])
 
 
-def norm(info, T, P):
+def total(info, T, P):
     '''
-    Normalize the values
+    Sum the IC of all terms
+    
+    Input:
+    info       : Object
+    T   : Set [ Truth      ]
+    P   : Set [ Prediction ]
+    
+    Output:
+    [0] : Float
     '''
+    
     # Sum of IC values of terms meeting criteria   
     total = 0.0
     # Sum the IC values of every element in T or P
@@ -73,8 +82,36 @@ def norm(info, T, P):
                 total += info.ic[term][1]
             except KeyError:
                 pass
-            
     return total
+    
+            
+def norm(info, T, P, r, m):
+    '''
+    Normalize
+    
+    Input:
+    info       : Object
+    T   : Set [ Truth      ]
+    P   : Set [ Prediction ]
+    r   : Float   Remaining Uncertainity
+    m   : Float   Misinformation
+    
+    Output:
+    [0] : Float   Normalized Remaining Uncertainity
+    [1] : Float   Normalized Misinformation 
+    '''
+    
+    # Calculate IC Totals
+    n = total(info, T, P)
+    # Try to normalize values
+    if r is not None and m is not None:
+            try:
+                rn = r / n
+                mn = m / n
+            except ZeroDivisionError:
+                rn = None
+                mn = None        
+    return rn, mn
     
     
 
@@ -97,8 +134,8 @@ def rumi_average(info, k, threshold, ontology, Type, mode):
     [1]        : Float    Misinformation
     '''
     
-    RU = 0.0  
-    MI = 0.0
+    RU    = 0.0  
+    MI    = 0.0
     count = 0
     
     info.count_above_threshold[threshold] = 0 # Ne in paper 
@@ -123,14 +160,9 @@ def rumi_average(info, k, threshold, ontology, Type, mode):
         # Calculate ru & mi     
         r = S.ru(info, T, P)
         m = S.mi(info, T, P)
-        n = norm(info, T, P)
-        if r is not None and m is not None:
-            try:
-                rn = r/n
-                mn = m/n
-            except ZeroDivisionError:
-                rn = None
-                mn = None
+        # Normalize values
+        rn, mn = norm(info, T, P, r, m)
+        
         # Check both to ensure calculation worked
         if rn is not None and mn is not None:
             RU += rn
