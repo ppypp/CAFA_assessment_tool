@@ -45,11 +45,13 @@ def get_namespace_index(namespace):
     '''
     
     num = None
-    if namespace=='BPO' or namespace=='bpo':
+    if   namespace == 'BPO' or namespace == 'bpo':
         num = 0
-    elif namespace=='MFO' or namespace=='mfo':
+    elif namespace == 'MFO' or namespace == 'mfo':
         num = 1
-    elif namespace=='CCO' or namespace=='cco':
+    elif namespace == 'CCO' or namespace == 'cco':
+        num = 2
+    elif namespace == 'HPO' or namespace == 'hpo':
         num = 2
     else:
         raise ValueError("name space not found, check prediction files")
