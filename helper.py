@@ -70,7 +70,7 @@ def typeConverter(oldType):
     [0]     : String  new type name
     '''
     
-    if oldType=='type1':
+    if   oldType == 'type1':
         newType = 'NK'
     elif oldType == 'type2':
         newType = 'LK'
