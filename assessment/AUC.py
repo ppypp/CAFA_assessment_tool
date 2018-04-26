@@ -18,21 +18,35 @@ def output(info, ontology, Type, mode):
     Output:
     [0]    : 
     '''
+    # Build the prediction and truth term lists from the protein based predictions
     TermList, TrueList = configureLists(info, mode)
+    # Reduce list to only those who gained 10+ Positive Annoted Sequences (Benchmark has 10+)
+    TermList, TrueList = reduceLists(info, mode, TermList, TrueList)
     # Intialize Variables
-    
     Truth = set()
-    
-    
-    
     # Build truth set
     for term in TrueList:    
         Truth.add(term)
-    
-    gained = {} # The set  of terms that gained 10 Positive Annoted Sequences
-    outThreshold = {}
+    # For every Threshold
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-        threshold = numpy.around(threshold, decimals = 2)        
+        threshold = numpy.around(threshold, decimals = 2)  
+        Predicted = set()
+        tempList = defaultdict(list)        
+        # Build the predicted set
+        for term in TermList:
+        # If it is above the threshold
+            for t in TermList[term]:
+                protein    = t['protein']
+                confidence = t['confidence']
+                if confidence >= threshold:
+                    tempList[term].append({'protein':protein, 'confidence':confidence})
+        # Now have list of only predictions above threshold
+        for term in tempList:
+            Predicted.add(term)
+        # Now have a predicted set 
+        # For all terms predicted
+        for term in Predicted:
+            
         # Reset for each threshold
         CP = 0 # TP + FN
         # Effectively true positives
@@ -41,7 +55,8 @@ def output(info, ontology, Type, mode):
         # Effectively true negatives
         
         for term in TermList:
-            # For all terms
+            tp = TP(info, Truth, Predicted)
+            fp = FP(info, Truth, Predicted)   
             if term in Truth:
                 CP += 1
             else: 
@@ -50,16 +65,14 @@ def output(info, ontology, Type, mode):
         terms = []
         areas = []
         
-        Predicted = set()
-        for term in TermList:
-        # If it is above the threshold, add to the P set
-            if TermList[term][1] >= threshold:
-                Predicted.add(term) 
-        # Now have A predicted set 
-        tp = TP(info, Truth, Predicted)
-        fp = FP(info, Truth, Predicted)                    
+        
+        
+        
+
+                         
                             
-                            
+        print (Predicted)
+        print (Truth)               
         
                 
         tpr = tp / CP # Sensitivity
@@ -73,10 +86,11 @@ def output(info, ontology, Type, mode):
             terms.append(term)
             areas.append(area)
             
-        out = {} # {Go:term, Area}
-        outThreshold[threshold].append(out) 
+        #out = {} # {Go:term, Area}
+        #outThreshold[threshold].append(out) 
     # Return all thresholds     
-    return outThreshold
+    # TPR, FPR, AREA are lists         
+    return TPR, FPR, AREA, AUC, AUCThreshold
     
     
 def TP(info, T, P):
@@ -137,14 +151,28 @@ def configureLists(info, mode):
     termList = defaultdict(list)
     trueList = defaultdict(list)
     
-    
+    # For every protein
     for protein in info.data:
-        for term in protein:
-            confidence = 0 # FIX THIS#################################################
-            termList[term].append({protein, confidence})
-        if (protein in info.true_terms[protein]):
-            for term in info.termterms[protein]:
-                trueList[term].append({protein, True})
+        # Grab Term / confidence lists
+        for t in info.data[protein]:
+            # Seperate Term and confidence
+            term       = t['term']
+            confidence = t['confidence']
+            #
+            #print (t)
+            #print (t['term'])
+            #print (t['confidence'])
+            #print (confidence)
+            #print(term)
+            # Append to a new dictionary Term : {protein, confidence}
+            # termList is the prediction
+            termList[term].append({'protein':protein, 'confidence':confidence})
+            #print (termList[term])
+        # If protein is in the benchmark   
+        if info.true_terms[protein]:
+            # For every term that is true, add it to the trueList
+            for term in info.true_terms[protein]:
+                trueList[term].append({'protein':protein, 'turth':True})
     # When done here, I will have a dictionary 
     # KEY: GO term,  Value: LIST [ PROTEIN, CONFIDENCE]
     # KEY: GO term,  Value: LIST [ PROTEIN, Truth]   

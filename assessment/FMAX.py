@@ -1,5 +1,5 @@
 '''
-Class to claculate the F maximum
+Class to claculate the Harmonic Mean Maximum (F-MAX)
 '''
 
 import numpy
@@ -22,9 +22,9 @@ def output(info, ontology, Type, mode):
     # Intialize Variables
     fmax = 0.0
     fmax_threshold = -1.0
-    PR = []
-    RC = []
-    F  = []
+    PR   = []
+    RC   = []
+    F    = []
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
         
