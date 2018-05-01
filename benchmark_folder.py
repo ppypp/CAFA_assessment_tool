@@ -158,10 +158,10 @@ def run(benchmarkFolder,taxon_id,f,Type,onto):
         
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Map UniProt Accession ID to CAFA ID', )
-    parser.add_argument('file',help='Input prebenchmark file')
-    parser.add_argument('-b',dest='benchFolder',help='Final Benchmark Folder',required=True)
-    parser.add_argument('-s',dest='species',help='Input list of species, in NCBI taxonomy ID',required=True)
-    parser.add_argument('-t','--t',dest='type',help = 'Input evaluation type: No Knowledge or Limited Knowledge', choices=['NK','LK'],required=True)    
-    parser.add_argument('-o','--o',dest='onto',help='Input ontology',choices=['bpo','cco','mfo'],required=True)
+    parser.add_argument('file',                     help='Input prebenchmark file'                                                                         )
+    parser.add_argument('-b', dest = 'benchFolder', help='Final Benchmark Folder',                                                            required=True)
+    parser.add_argument('-s', dest = 'species',     help='Input list of species, in NCBI taxonomy ID',                                        required=True)
+    parser.add_argument('-t','--t', dest = 'type',  help = 'Input evaluation type: No Knowledge or Limited Knowledge', choices = ['NK','LK'], required=True)    
+    parser.add_argument('-o','--o', dest = 'onto',  help='Input ontology',choices=['bpo','cco','mfo'],                                        required=True)
     args = parser.parse_args()
     run(args.benchFolder,args.species,args.file,args.type,args.onto)

@@ -44,8 +44,7 @@ class GOPrediction:
     in self.read(pred_path) , pred_path should be a handle
     The read function should read in from a RAW prediction file submitted 
     by a CAFA participanting team (post format check though)
-    The split function will perform spliting the prediction by ontology,
-    which used to be a separate function in preprocess.py
+    The split function will perform spliting the prediction by ontology
     """
 
     def __init__(self):
@@ -53,13 +52,13 @@ class GOPrediction:
         Initilize the prediction
         '''
         
-        # get author (teamID) and model from both header and filename
+        # Get author (teamID) and model from both header and filename
         self.author   = None
         self.model    = None
-        # get keywords and accuracy from header
+        # Get keywords and accuracy from header
         self.keywords = []
         # split by ontology
-        # get taxon from filename
+        # Get taxon from filename
         self.taxon    = None
         # self.data is a dictionary
         # key: protein ID

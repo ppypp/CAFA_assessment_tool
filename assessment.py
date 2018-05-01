@@ -85,10 +85,10 @@ if __name__=='__main__':
                     r_temp.update(nsm[0], nsm[1], nsm[2], nsm[3], nsm[4])
                     r_temp.writeOut(ontology, Type, mode, "NSMIN")
                     
-                    r_temp = r
-                    auc = i.check("AUC", ontology, Type, mode)
-                    r.update("AUC", auc[0], auc[1], auc[2], auc[3], auc[4])
-                    r.writeOut(ontology, Type, mode, "AUC")
+                    #r_temp = r
+                    #auc = i.check("AUC", ontology, Type, mode)
+                    #r.update("AUC", auc[0], auc[1], auc[2], auc[3], auc[4])
+                    #r.writeOut(ontology, Type, mode, "AUC")
                
             del i
             gc.collect()

@@ -1,11 +1,11 @@
 '''
-Class to claculate the Harmonic Mean Maximum (F-MAX)
+Class to calculate the Harmonic Mean Maximum (F-MAX)
 '''
 
 import numpy
 
 
-def output(info, ontology, Type, mode):
+def output (info, ontology, Type, mode):
     ''' 
     Main Method 
     
@@ -20,21 +20,20 @@ def output(info, ontology, Type, mode):
     '''
     
     # Intialize Variables
-    fmax = 0.0
+    fmax           = 0.0
     fmax_threshold = -1.0
-    PR   = []
-    RC   = []
-    F    = []
+    PR             = []
+    RC             = []
+    F              = []
     # Run over all threshold values from 0 to 1, two signifigant digits
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
-        
         threshold = numpy.around(threshold, decimals = 2)
         # Run PRRC on given threshold
         pr, rc = PRRC_average(info, threshold, ontology, Type, mode)
         if pr is None:
             # No prediction above this threshold 
             fval = None
-            pass
+            #break
         else:
             PR.append(pr)
             RC.append(rc)
@@ -51,9 +50,9 @@ def output(info, ontology, Type, mode):
     return ([PR, RC, F, fmax, fmax_threshold])
     
     
-def f(precision, recall):
+def f (precision, recall):
     ''' 
-    Calculate F function 
+    Calculate Harmonic Mean 
     
      Input:
      precision : Float
@@ -70,20 +69,20 @@ def f(precision, recall):
     return f
 
  
-def PRRC_average(info, threshold, ontology, Type, mode):
+def PRRC_average (info, threshold, ontology, Type, mode):
     '''
     Calculate the overall PRRC of file
     
     Input:
     info      : Object
-    threshold : Float      {0.0 -> 1.0}
+    threshold : Float      {0.00 -> 1.00}
     ontology  : String     {bpo, cco, mfo}
     Type      : String     {type1, type2}
     mode      : String     {partial, full}
     
     Output:
-    [0]        : Float
-    [1]        : Float
+    [0]       : Float     Precision Value
+    [1]       : Float     Recall value
     '''
     
     # Initialize Variables
@@ -112,7 +111,9 @@ def PRRC_average(info, threshold, ontology, Type, mode):
         except ZeroDivisionError:
             recall = 0
             print("No protein in this benchmark set\n")
-            
+    else:
+        print("Invalid Mode")    
+        
     try:
         precision = PR / info.count_above_threshold[threshold]   
     except ZeroDivisionError:
@@ -122,7 +123,7 @@ def PRRC_average(info, threshold, ontology, Type, mode):
     return (precision, recall)     
     
     
-def PRRC(info, threshold, protein, ontology, Type, mode):
+def PRRC (info, threshold, protein, ontology, Type, mode):
     '''
     Calculate the PRRC of a single protein
     

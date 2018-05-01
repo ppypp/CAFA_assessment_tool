@@ -56,7 +56,7 @@ def go_ontology_split(ontology):
     Split an GO obo file into three ontologies
     
     Input:
-    ontology : 
+    ontology : Ontology File generate by OBOReader
     
     Output:
     [0]      : Set   MFO Terms

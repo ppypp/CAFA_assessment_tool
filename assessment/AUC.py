@@ -4,7 +4,7 @@ from collections import defaultdict
 
 
 '''
-AUC By GOterm NEEDS A LOT OF HELP
+AUC By GOterm 
 '''
 
 def output(info, ontology, Type, mode):
@@ -43,9 +43,6 @@ def output(info, ontology, Type, mode):
         # Now have list of only predictions above threshold
         for term in tempList:
             Predicted.add(term)
-        # Now have a predicted set 
-        # For all terms predicted
-        for term in Predicted:
             
         # Reset for each threshold
         CP = 0 # TP + FN
@@ -53,38 +50,40 @@ def output(info, ontology, Type, mode):
         
         CN = 0 # FP + TN
         # Effectively true negatives
+            
+        # Now have a predicted set
+        if mode == "partial":
+            # For all terms predicted
+            for term in Predicted: # Use only those predicted at this threshold
+                tp = TP(info, Truth, Predicted)
+                fp = FP(info, Truth, Predicted)   
+                if term in Truth:
+                    CP += 1
+                else: 
+                    CN += 1
+            
+        else: #full
+            for term in TermList: # Use all terms
+                tp = TP(info, Truth, Predicted)
+                fp = FP(info, Truth, Predicted)   
+                if term in Truth:
+                    CP += 1
+                else: 
+                    CN += 1
         
-        for term in TermList:
-            tp = TP(info, Truth, Predicted)
-            fp = FP(info, Truth, Predicted)   
-            if term in Truth:
-                CP += 1
-            else: 
-                CN += 1
+        tpr = tp / CP # Sensitivity
+        fpr = fp / CN # Fall out
         
         terms = []
         areas = []
         
-        
-        
-        
 
-                         
-                            
-        print (Predicted)
-        print (Truth)               
-        
-                
-        tpr = tp / CP # Sensitivity
-        fpr = fp / CN # Fall out
-            
-
-        for term in gained:
+        for term in TermList:
             # Calculate Area
             area = numpy.trapz(TP)
             # Add to list
-            terms.append(term)
-            areas.append(area)
+        
+        # Want an object that per TERM, returns TP, FP, CP, CN, TPR, FPR, Area, Threshold
             
         #out = {} # {Go:term, Area}
         #outThreshold[threshold].append(out) 
@@ -177,3 +176,14 @@ def configureLists(info, mode):
     # KEY: GO term,  Value: LIST [ PROTEIN, CONFIDENCE]
     # KEY: GO term,  Value: LIST [ PROTEIN, Truth]   
     return (termList, trueList)
+    
+def reduceLists(info, mode, TermList, TrueList):
+    '''
+    Reduce Lists to only those with 10+ proteins
+    * what if term based benchmarks would be different??
+    
+    '''
+        
+    
+    
+    return TermList, TrueList
