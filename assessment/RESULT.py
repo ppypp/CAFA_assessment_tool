@@ -69,7 +69,7 @@ class result:
 
     def writeOut(self, Ontology, Type, Mode, tool):
         '''
-        
+        Method to dump data to file for evaluation
         '''
         
         # Set Ontology to correct formating

@@ -16,9 +16,9 @@ if __name__=='__main__':
     Main function that takes a predicition and returns calculated values
     '''
     # Read Config
-    obo_path, ic_path, prediction_path, benchmark_directory, results_directory, verbose = helper.read_config_MAIN()
+    obo_path, ic_path, prediction_path, benchmark_directory, results_directory = helper.read_config_MAIN()
     # Setup workspace
-    print('\nEvaluating %s.\n' % prediction_path)
+    print('\n Evaluating {}\n'.format(prediction_path))
     # Get predictions
     all_prediction  = GOPrediction()
     prediction_file = open(prediction_path, 'r')
@@ -30,16 +30,16 @@ if __name__=='__main__':
     del all_prediction
     gc.collect()
     # Print values
-    print('AUTHOR: %s\n' % author)
-    print('MODEL: %s\n' % model)
-    print('KEYWORDS: %s\n' % keywords)
-    print('Species:%s\n' % taxon)
+    print('AUTHOR:   {}\n'.format(author   ))
+    print('MODEL:    {}\n'.format(model    ))
+    print('KEYWORDS: {}\n'.format(keywords ))
+    print('Species:  {}\n'.format(taxon    ))
     # Make Results path
     results_path = results_directory + " " + author
     # Make directory 
     helper.mkdir_results(results_path)
     # Grab calculated IC
-    ic_map = cp.load(open(ic_path,"rb"))
+    ic_map = cp.load(open(ic_path, "rb"))
     # Make a result object for storing output
     r = result(results_path)
     # Populate result

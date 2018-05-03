@@ -181,9 +181,8 @@ def read_config_MAIN():
     prediction_path      = config_dict['prediction_path']
     benchmark_directory  = config_dict['benchmark_path']
     results_directory    = config_dict['results_path']
-    verbose              = config_dict['verbose']
     
-    return(obo_path, ic_path, prediction_path, benchmark_directory, results_directory, verbose)
+    return(obo_path, ic_path, prediction_path, benchmark_directory, results_directory)
     
     
 def read_config_PLOT():

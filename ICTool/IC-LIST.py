@@ -20,11 +20,8 @@ GAF21FIELDS = [
                 'Gene_Product_Form_ID'
                 ]
 
-from Bio.UniProt  import GOA
-import collections
 import math
 import pickle as cp
-import gc
 import os
 import argparse
 import sys
@@ -40,7 +37,7 @@ def LISTtoDICT(list_path):
     Converts an imported List into a dictionary
     
     Input: 
-    gaf : GAF 2.1 object generator
+    gaf : filename of List
     
     Ouput: 
     [0] : Dictionary KEY: AnnotationID, VALUE: Annotation 
@@ -53,10 +50,7 @@ def LISTtoDICT(list_path):
     # For every annotation, create an id and add to data
     for line in reader:
         Protein, GOTerm, Aspect = line.split("\t")
-        #print Protein
-        #print GOTerm
         Aspect, Empty =  Aspect.split("\n")
-        #print Aspect
         
         data[counter] = [Protein, GOTerm, Aspect]
         #print data[counter]
@@ -75,7 +69,7 @@ def ProteinToGO(data):
     Each protein refers to a list of GO_TERMS.
     
     Input: 
-    data  : Dictionary KEY: AnnotationID, VALUE: 
+    data  : Dictionary KEY: AnnotationID, VALUE: {Protein, Go_Term, aspect}
     
     Output: 
     [0]   : Dictionary KEY: Proteins,     VALUE: GO Terms
@@ -83,27 +77,23 @@ def ProteinToGO(data):
     '''
     
      # Load Alternate map
-    alt_id_to_id = cp.load( open("ALTERNATE_ID_TO_ID.map", "rb" ) )
+    alt_id_to_id  = cp.load( open("ICdata/ALTERNATE_ID_TO_ID.map", "rb" ) )
+    # Intialize variables
     protein_to_go = dict()
-    all_GO = []
-    
+    all_GO        = []
+    # For all annotations
     for annotationID in data:
         annotation = data[annotationID]
-        #print annotation
         protein = annotation[0] 
         GO_term = annotation[1]
         aspect  = annotation[2]
-        #print protein
-        #print GO_term
-        #print Aspect
-        # If in alternate map, replace
+        # If in alternate map, replace 
         if GO_term in alt_id_to_id:
             GO_term = alt_id_to_id[GO_term]
         # Add GO to total list
         all_GO.append( GO_term )
         # Check if protein has been added
         if protein not in protein_to_go:
-            #print "added protein"
             protein_to_go[protein] = []
         # Check if aspect has been added    
         if [GO_term, aspect] not in protein_to_go[protein]:
@@ -124,9 +114,9 @@ def propagateOntologies(Protein_to_GO):
     
     Prot_to_GO_new = dict()
     
-    mf_ancestors = cp.load(open("MFO_ANCESTORS.graph","rb"))
-    bp_ancestors = cp.load(open("BPO_ANCESTORS.graph","rb"))
-    cc_ancestors = cp.load(open("CCO_ANCESTORS.graph","rb"))
+    mf_ancestors = cp.load(open("ICdata/MFO_ANCESTORS.graph","rb"))
+    bp_ancestors = cp.load(open("ICdata/BPO_ANCESTORS.graph","rb"))
+    cc_ancestors = cp.load(open("ICdata/CCO_ANCESTORS.graph","rb"))
     
     for protein in Protein_to_GO:
         ancestors = []
@@ -149,7 +139,7 @@ def propagateOntologies(Protein_to_GO):
     return Prot_to_GO_new
     
 
-def assignProbabilitiesToOntologyTree(graph, Protein_to_GO, all_GO_Terms, ontology_to_ia, aspect ):
+def assignProbabilitiesToOntologyTree(graph, Protein_to_GO, all_GO_Terms, IC, aspect ):
     '''
     Calculates probalities for a given aspect graph
     
@@ -163,33 +153,38 @@ def assignProbabilitiesToOntologyTree(graph, Protein_to_GO, all_GO_Terms, ontolo
     Output:
     [0]             : Dictionary KEY: Node (Term), VALUE: List[Probability, Log]
     '''
-    for node_num, node in enumerate( graph.nodes() ):
-        if( node not in all_GO_Terms ):
+    for count, term in enumerate( graph.nodes() ):
+        if( term not in all_GO_Terms ):
             #Node :[Probability, Log]
-            ontology_to_ia[node] = [0, 0]
+            IC[term] = [0, 0]
             continue
-        if node_num % 100 == 0:
-            print( node_num , " proteins processed for ", aspect )
+        if count % 100 == 0:
+            print( count , " proteins processed for ", aspect )
             
-        predecessor = graph.successors( node )
-        predecessor_with_node = []
-        predecessor_with_node.extend( predecessor )
-        predecessor_with_node.append( node )
-        denominator = findFrequency( predecessor, Protein_to_GO )
-        numerator   = findFrequency( predecessor_with_node, Protein_to_GO )
+        predecessor = graph.successors( term )
+        predecessor_with_term = []
+        # Get predecessor with the current term
+        predecessor_with_term.extend( predecessor )
+        predecessor_with_term.append( term )
+        denominator = findFrequency( predecessor          , Protein_to_GO )
+        numerator   = findFrequency( predecessor_with_term, Protein_to_GO )
         
+        # Catching Div by 0 Error
         if( denominator == 0.0 ):
-            prob = 0.0
+            prob = None
         else:
             prob = float(numerator) / float(denominator)
-        if (prob != 0.0):
-            ontology_to_ia[node] = [prob, -math.log( prob, 2 )]
-        else:
-            ontology_to_ia[node] = [prob, 0]
-    #Needed?
-    return ontology_to_ia
+        # Catching Log(0) Error    
+        if   (prob != 0.0 and prob is not None):
+            IC[term] = [prob, -math.log( prob, 2 )]
+        elif (prob == 0.0):
+            IC[term] = [prob, 0]
+        else: # prob is None
+            IC[term] = [None, None]
+    return IC
+    
 
-def assignProbabilitiesToOntologyGraphs( Protein_to_GO, all_GO_Terms):
+def assignProbabilities( Protein_to_GO, all_GO_Terms):
     '''
     Calculates probalities for all aspects
     
@@ -200,32 +195,36 @@ def assignProbabilitiesToOntologyGraphs( Protein_to_GO, all_GO_Terms):
     Output:
     [0]           : Dictionary KEY: Node (Term), VALUE: List[Probability, Log]
     '''
-    mf_g = cp.load( open( "MFO.graph", "rb" ) )
-    bp_g = cp.load( open( "BPO.graph", "rb" ) )
-    cc_g = cp.load( open( "CCO.graph", "rb" ) )
+        
+    IC = dict()
     
-    ontology_to_ia = dict()
+    mf_g = cp.load( open( "ICdata/MFO.graph", "rb" ) )
+    IC = assignProbabilitiesToOntologyTree( mf_g, Protein_to_GO, all_GO_Terms, IC, 'MFO' )
+    del mf_g
     
-    assignProbabilitiesToOntologyTree( mf_g, Protein_to_GO, all_GO_Terms, ontology_to_ia, 'MFO' )
-    assignProbabilitiesToOntologyTree( bp_g, Protein_to_GO, all_GO_Terms, ontology_to_ia, 'BPO' )
-    assignProbabilitiesToOntologyTree( cc_g, Protein_to_GO, all_GO_Terms, ontology_to_ia, 'CCO' )
+    bp_g = cp.load( open( "ICdata/BPO.graph", "rb" ) )
+    IC = assignProbabilitiesToOntologyTree( bp_g, Protein_to_GO, all_GO_Terms, IC, 'BPO' )
+    del bp_g
     
-    return ontology_to_ia
-    
+    cc_g = cp.load( open( "ICdata/CCO.graph", "rb" ) )
+    IC = assignProbabilitiesToOntologyTree( cc_g, Protein_to_GO, all_GO_Terms, IC, 'CCO' )
+    del cc_g
+        
+    return IC
    
     
-def findFrequency(annotations, Protein_to_GO ):
+def findFrequency(terms, Protein_to_GO ):
     '''
-    Find the frequency of annotations in the protein data
+    Find the frequency of terms in the protein data
     '''
     
     count = 0.0
     # Check for no annotations
-    if annotations == None:
+    if terms == None:
         return 0
-        
+    # For all proteins    
     for protein in Protein_to_GO:
-        if set( annotations ).issubset( set( Protein_to_GO[protein] ) ):
+        if set( terms ).issubset( set( Protein_to_GO[protein] ) ):
             count += 1.0
     return count
 
@@ -267,21 +266,18 @@ def WyattClarkIC(data):
     # Propagate ancestors 
     Protein_to_GO_propagated = propagateOntologies(Protein_to_GO)
     # Calculate IA
-    ontology_to_ia = assignProbabilitiesToOntologyGraphs(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
+    IC = assignProbabilities(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
     
     # Save IA Map
-    cp.dump(ontology_to_ia, open("ia.map","wb"))
-    convertToReadable(ontology_to_ia)
-    #protInfoAccretion = calculateInformationAccretion( Prot_to_GO_Map_propagated, ontology_to_ia_map )
-
-    return ontology_to_ia
+    cp.dump(IC, open("ICdata/ia.map","wb"))
+    convertToReadable(IC)
  
  
 def convertToReadable(ontology_to_ia):
     '''
     Convert Map to human readable Values to manually check accuracy
     '''
-    data  = open("./IAmap.txt", 'w')
+    data  = open(".ICdata/IAmap.txt", 'w')
     for term in ontology_to_ia:
         data.write('{}\t {}\t {}\n'.format(term, ontology_to_ia[term][0], ontology_to_ia[term][1]))
 
