@@ -198,9 +198,9 @@ def assignProbabilitiesMULTI( Protein_to_GO, all_GO_Terms):
         
     IC = dict()
     
-    pm = Process(target = fun, args=(Protein_to_GO, all_GO_Terms, IC, 'MFO',))
-    pb = Process(target = fun, args=(Protein_to_GO, all_GO_Terms, IC, 'BPO',))
-    pc = Process(target = fun, args=(Protein_to_GO, all_GO_Terms, IC, 'CCO',)) 
+    pm = Process(target = function, args=(Protein_to_GO, all_GO_Terms, IC, 'MFO',))
+    pb = Process(target = function, args=(Protein_to_GO, all_GO_Terms, IC, 'BPO',))
+    pc = Process(target = function, args=(Protein_to_GO, all_GO_Terms, IC, 'CCO',)) 
     pm.start()
     pb.start()
     pc.start()
@@ -211,7 +211,7 @@ def assignProbabilitiesMULTI( Protein_to_GO, all_GO_Terms):
     return IC
     
     
-def fun(Protein_to_GO, all_GO_Terms, IC, S):
+def function(Protein_to_GO, all_GO_Terms, IC, S):
     '''
     Helper function for Multi-process approach
     
