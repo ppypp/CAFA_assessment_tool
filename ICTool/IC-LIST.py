@@ -26,7 +26,7 @@ import os
 import argparse
 import sys
 import yaml
-
+from multiprocessing import Process
 import ICHelper
 
   
@@ -147,16 +147,16 @@ def assignProbabilitiesToOntologyTree(graph, Protein_to_GO, all_GO_Terms, IC, as
     graph           : 
     Protein_to_GO   : Dictionary KEY: Proteins,    VALUE: GO Terms
     all_GO_Terms    : Set        all GO terms in the data
-    ontology_to_ia  : Dictionary KEY: Node (Term), VALUE: List[Probability, Log]
+    IC              : Dictionary KEY: Term, VALUE: List[Probability, Log]
     aspect          : String     (MFO, BPO, CCO)
     
     Output:
-    [0]             : Dictionary KEY: Node (Term), VALUE: List[Probability, Log]
+    [0]             : Dictionary KEY: T erm, VALUE: List[Probability, Log]
     '''
     for count, term in enumerate( graph.nodes() ):
         if( term not in all_GO_Terms ):
             #Node :[Probability, Log]
-            IC[term] = [0, 0]
+            IC[term] = [None, None]
             continue
         if count % 100 == 0:
             print( count , " proteins processed for ", aspect )
@@ -184,6 +184,50 @@ def assignProbabilitiesToOntologyTree(graph, Protein_to_GO, all_GO_Terms, IC, as
     return IC
     
 
+def assignProbabilitiesMULTI( Protein_to_GO, all_GO_Terms):
+    '''
+    Calculates probalities for all aspects MULTI
+    
+    Input:
+    Protein_to_GO : Dictionary KEY: Proteins,    VALUE: GO Terms
+    all_GO_Terms  : Set        all GO terms in the data
+    
+    Output:
+    [0]           : Dictionary KEY: Term, VALUE: List[Probability, Log]
+    '''
+        
+    IC = dict()
+    
+    pm = Process(target = fun, args=(Protein_to_GO, all_GO_Terms, IC, 'MFO',))
+    pb = Process(target = fun, args=(Protein_to_GO, all_GO_Terms, IC, 'BPO',))
+    pc = Process(target = fun, args=(Protein_to_GO, all_GO_Terms, IC, 'CCO',)) 
+    pm.start()
+    pb.start()
+    pc.start()
+    pm.join()
+    pb.join()
+    pc.join()
+    
+    return IC
+    
+    
+def fun(Protein_to_GO, all_GO_Terms, IC, S):
+    '''
+    Helper function for Multi-process approach
+    
+    Input:
+    Protein_to_GO : Dictionary KEY: Proteins,    VALUE: GO Terms
+    all_GO_Terms  : Set        all GO terms in the data
+    IC            : Dictionary KEY: TERM,        VALUE: {Probality, Log}
+    S             : String     {MFO, BPO, CCO}
+    
+    Output:
+    [0]  
+    '''
+    g = cp.load( open( "ICdata/{}.graph".format(S), "rb" ) )
+    assignProbabilitiesToOntologyTree( g, Protein_to_GO, all_GO_Terms, IC, S )
+   
+   
 def assignProbabilities( Protein_to_GO, all_GO_Terms):
     '''
     Calculates probalities for all aspects
@@ -193,7 +237,7 @@ def assignProbabilities( Protein_to_GO, all_GO_Terms):
     all_GO_Terms  : Set        all GO terms in the data
     
     Output:
-    [0]           : Dictionary KEY: Node (Term), VALUE: List[Probability, Log]
+    [0]           : Dictionary KEY: Term, VALUE: List[Probability, Log]
     '''
         
     IC = dict()
@@ -208,8 +252,8 @@ def assignProbabilities( Protein_to_GO, all_GO_Terms):
     
     cc_g = cp.load( open( "ICdata/CCO.graph", "rb" ) )
     IC = assignProbabilitiesToOntologyTree( cc_g, Protein_to_GO, all_GO_Terms, IC, 'CCO' )
-    del cc_g
-        
+    del cc_g 
+    
     return IC
    
     
@@ -266,20 +310,20 @@ def WyattClarkIC(data):
     # Propagate ancestors 
     Protein_to_GO_propagated = propagateOntologies(Protein_to_GO)
     # Calculate IA
-    IC = assignProbabilities(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
+    IC = assignProbabilitiesMULTI(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
     
     # Save IA Map
     cp.dump(IC, open("ICdata/ia.map","wb"))
     convertToReadable(IC)
  
  
-def convertToReadable(ontology_to_ia):
+def convertToReadable(IC):
     '''
     Convert Map to human readable Values to manually check accuracy
     '''
     data  = open(".ICdata/IAmap.txt", 'w')
-    for term in ontology_to_ia:
-        data.write('{}\t {}\t {}\n'.format(term, ontology_to_ia[term][0], ontology_to_ia[term][1]))
+    for term in IC:
+        data.write('{}\t {}\t {}\n'.format(term, IC[term][0], IC[term][1]))
 
 
 def extant_file(x):
