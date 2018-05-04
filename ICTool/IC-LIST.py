@@ -243,15 +243,15 @@ def assignProbabilities( Protein_to_GO, all_GO_Terms):
     IC = dict()
     
     mf_g = cp.load( open( "ICdata/MFO.graph", "rb" ) )
-    IC = assignProbabilitiesToOntologyTree( mf_g, Protein_to_GO, all_GO_Terms, IC, 'MFO' )
+    assignProbabilitiesToOntologyTree( mf_g, Protein_to_GO, all_GO_Terms, IC, 'MFO' )
     del mf_g
     
     bp_g = cp.load( open( "ICdata/BPO.graph", "rb" ) )
-    IC = assignProbabilitiesToOntologyTree( bp_g, Protein_to_GO, all_GO_Terms, IC, 'BPO' )
+    assignProbabilitiesToOntologyTree( bp_g, Protein_to_GO, all_GO_Terms, IC, 'BPO' )
     del bp_g
     
     cc_g = cp.load( open( "ICdata/CCO.graph", "rb" ) )
-    IC = assignProbabilitiesToOntologyTree( cc_g, Protein_to_GO, all_GO_Terms, IC, 'CCO' )
+    assignProbabilitiesToOntologyTree( cc_g, Protein_to_GO, all_GO_Terms, IC, 'CCO' )
     del cc_g 
     
     return IC
@@ -310,7 +310,7 @@ def WyattClarkIC(data):
     # Propagate ancestors 
     Protein_to_GO_propagated = propagateOntologies(Protein_to_GO)
     # Calculate IA
-    IC = assignProbabilitiesMULTI(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
+    IC = assignProbabilities(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
     
     # Save IA Map
     cp.dump(IC, open("ICdata/ia.map","wb"))
@@ -321,7 +321,7 @@ def convertToReadable(IC):
     '''
     Convert Map to human readable Values to manually check accuracy
     '''
-    data  = open(".ICdata/IAmap.txt", 'w')
+    data  = open("ICdata/IAmap.txt", 'w')
     for term in IC:
         data.write('{}\t {}\t {}\n'.format(term, IC[term][0], IC[term][1]))
 
