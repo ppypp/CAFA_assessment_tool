@@ -44,11 +44,11 @@ legal_species = [
  'CANAX',
  'SALCH']
 
-root_terms = ['GO:0008150', 'GO:0005575', 'GO:0003674']
-legal_ontology = ["bpo", "mfo", "cco", "hpo"] 
+root_terms      = ['GO:0008150', 'GO:0005575', 'GO:0003674']
+legal_ontology  = ["bpo", "mfo", "cco", "hpo"] 
 legal_types     = ["type1", "type2", "typex"]
 legal_subtypes  = ["easy", "hard"]
-legal_modes = ["full", "partial"]
+legal_modes     = ["full", "partial"]
 
 ######################################BENCHMARK START#################################
 def go_ontology_split(ontology):
@@ -68,15 +68,15 @@ def go_ontology_split(ontology):
     bpo_terms = set({})
     cco_terms = set({})
     
-    for node in ontology.get_ids(): # loop over node IDs and alt_id's
-        if ontology.namespace[node]   == "biological_process": # P
-            bpo_terms.add(node)
-        elif ontology.namespace[node] == "cellular_component": # C
-            cco_terms.add(node)
-        elif ontology.namespace[node] == "molecular_function": # F
-            mfo_terms.add(node)
+    for term in ontology.get_ids(): # loop over node IDs and alt_id's
+        if ontology.namespace[term]   == "biological_process": # P
+            bpo_terms.add(term)
+        elif ontology.namespace[term] == "cellular_component": # C
+            cco_terms.add(term)
+        elif ontology.namespace[term] == "molecular_function": # F
+            mfo_terms.add(term)
         else:
-            raise(ValueError,"%s has no namespace" % node)
+            raise(ValueError,"{} has no namespace".format(term))
     return (mfo_terms, bpo_terms, cco_terms)
     
     
@@ -143,6 +143,7 @@ def read_benchmark(ontology, species, types, benchmark_directory, obopath):
         # Create name for finding benchmark file
         matchname = ontology + '_' + species + '_' + types + '.txt'
     # Generate ancestor files
+    # Store size of each ontology
     obocounts = go_ontology_ancestors_split_write(obopath)
     obocountDict = {'bpo':obocounts[0],'cco':obocounts[1],'mfo':obocounts[2]}
     # Ontology-specific calculations
