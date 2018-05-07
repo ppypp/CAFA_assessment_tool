@@ -180,7 +180,7 @@ def assignProbabilitiesToOntologyTree(graph, Protein_to_GO, all_GO_Terms, IC, as
         elif (prob == 0.0):
             IC[term] = [prob, 0]
         else: # prob is None
-            IC[term] = [None, None]
+            IC[term] = [0, 0]
     return IC
     
 
