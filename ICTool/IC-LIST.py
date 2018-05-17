@@ -88,8 +88,9 @@ def ProteinToGO(data):
         GO_term = annotation[1]
         aspect  = annotation[2]
         # If in alternate map, replace 
-        if GO_term in alt_id_to_id:
-            GO_term = alt_id_to_id[GO_term]
+        if GO_term in alt_id_to_id:  #################### DONT WANT ALT IDS ###########################
+            pass
+        #    GO_term = alt_id_to_id[GO_term]
         # Add GO to total list
         all_GO.append( GO_term )
         # Check if protein has been added
@@ -151,12 +152,12 @@ def assignProbabilitiesToOntologyTree(graph, Protein_to_GO, all_GO_Terms, IC, as
     aspect          : String     (MFO, BPO, CCO)
     
     Output:
-    [0]             : Dictionary KEY: T erm, VALUE: List[Probability, Log]
+    [0]             : Dictionary KEY: Term, VALUE: List[Probability, Log]
     '''
     for count, term in enumerate( graph.nodes() ):
         if( term not in all_GO_Terms ):
             #Node :[Probability, Log]
-            IC[term] = [None, None]
+            IC[term] = [0, 0]
             continue
         if count % 100 == 0:
             print( count , " proteins processed for ", aspect )
@@ -177,9 +178,7 @@ def assignProbabilitiesToOntologyTree(graph, Protein_to_GO, all_GO_Terms, IC, as
         # Catching Log(0) Error    
         if   (prob != 0.0 and prob is not None):
             IC[term] = [prob, -math.log( prob, 2 )]
-        elif (prob == 0.0):
-            IC[term] = [prob, 0]
-        else: # prob is None
+        else: # prob is None or 0
             IC[term] = [0, 0]
     return IC
     
@@ -196,11 +195,13 @@ def assignProbabilitiesMULTI( Protein_to_GO, all_GO_Terms):
     [0]           : Dictionary KEY: Term, VALUE: List[Probability, Log]
     '''
         
-    IC = dict()
+    mf_IC = dict()
+    bp_IC = dict()
+    cc_IC = dict()
     
-    pm = Process(target = function, args=(Protein_to_GO, all_GO_Terms, IC, 'MFO',))
-    pb = Process(target = function, args=(Protein_to_GO, all_GO_Terms, IC, 'BPO',))
-    pc = Process(target = function, args=(Protein_to_GO, all_GO_Terms, IC, 'CCO',)) 
+    pm = Process(target = function, args=(Protein_to_GO, all_GO_Terms, mf_IC, 'MFO',))
+    pb = Process(target = function, args=(Protein_to_GO, all_GO_Terms, bp_IC, 'BPO',))
+    pc = Process(target = function, args=(Protein_to_GO, all_GO_Terms, cc_IC, 'CCO',)) 
     pm.start()
     pb.start()
     pc.start()
@@ -208,7 +209,7 @@ def assignProbabilitiesMULTI( Protein_to_GO, all_GO_Terms):
     pb.join()
     pc.join()
     
-    return IC
+    return mf_IC, bp_IC, cc_IC
     
     
 def function(Protein_to_GO, all_GO_Terms, IC, S):
@@ -240,21 +241,23 @@ def assignProbabilities( Protein_to_GO, all_GO_Terms):
     [0]           : Dictionary KEY: Term, VALUE: List[Probability, Log]
     '''
         
-    IC = dict()
+    mf_IC = dict()
+    bp_IC = dict()
+    cc_IC = dict()
     
     mf_g = cp.load( open( "ICdata/MFO.graph", "rb" ) )
-    assignProbabilitiesToOntologyTree( mf_g, Protein_to_GO, all_GO_Terms, IC, 'MFO' )
+    assignProbabilitiesToOntologyTree( mf_g, Protein_to_GO, all_GO_Terms, mf_IC, 'MFO' )
     del mf_g
     
     bp_g = cp.load( open( "ICdata/BPO.graph", "rb" ) )
-    assignProbabilitiesToOntologyTree( bp_g, Protein_to_GO, all_GO_Terms, IC, 'BPO' )
+    assignProbabilitiesToOntologyTree( bp_g, Protein_to_GO, all_GO_Terms, bp_IC, 'BPO' )
     del bp_g
     
     cc_g = cp.load( open( "ICdata/CCO.graph", "rb" ) )
-    assignProbabilitiesToOntologyTree( cc_g, Protein_to_GO, all_GO_Terms, IC, 'CCO' )
+    assignProbabilitiesToOntologyTree( cc_g, Protein_to_GO, all_GO_Terms, cc_IC, 'CCO' )
     del cc_g 
     
-    return IC
+    return mf_IC, bp_IC, cc_IC
    
     
 def findFrequency(terms, Protein_to_GO ):
@@ -310,18 +313,25 @@ def WyattClarkIC(data):
     # Propagate ancestors 
     Protein_to_GO_propagated = propagateOntologies(Protein_to_GO)
     # Calculate IA
-    IC = assignProbabilities(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
+    mf_IC, bp_IC, cc_IC  = assignProbabilitiesMULTI(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
     
     # Save IA Map
-    cp.dump(IC, open("ICdata/ia.map","wb"))
-    convertToReadable(IC)
+    cp.dump(bp_IC, open("ICdata/ia_BPO.map","wb"))
+    convertToReadable(bp_IC, "BPO")
+        
+    cp.dump(cc_IC, open("ICdata/ia_CCO.map","wb"))
+    convertToReadable(cc_IC, "CCO")
+    
+    cp.dump(mf_IC, open("ICdata/ia_MFO.map","wb"))
+    convertToReadable(mf_IC, "MFO")
+
  
  
-def convertToReadable(IC):
+def convertToReadable(IC, ontology):
     '''
     Convert Map to human readable Values to manually check accuracy
     '''
-    data  = open("ICdata/IAmap.txt", 'w')
+    data  = open("ICdata/IAmap_{}.txt".format(ontology), 'w')
     for term in IC:
         data.write('{}\t {}\t {}\n'.format(term, IC[term][0], IC[term][1]))
 

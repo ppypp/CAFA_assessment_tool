@@ -38,8 +38,6 @@ if __name__=='__main__':
     results_path = results_directory + " " + author
     # Make directory 
     helper.mkdir_results(results_path)
-    # Grab calculated IC
-    ic_map = cp.load(open(ic_path, "rb"))
     # Make a result object for storing output
     r = result(results_path)
     # Populate result
@@ -47,7 +45,8 @@ if __name__=='__main__':
     # For each ontology
     for ontology in ['bpo','cco','mfo']:
         path = os.path.splitext(prediction_file.name)[0] + '_' + ontology.upper() + '.txt'
-        
+        # Grab calculated IC for ontology
+        ic_map = cp.load(open("{}ia_{}.map".format(ic_path, ontology.upper()), "rb"))
         print('Ontology: {}\n'.format(ontology))
         # For each type (NK, LK)
         for Type in ['type1','type2']:
@@ -69,21 +68,21 @@ if __name__=='__main__':
                     fm = i.check("FMAX", ontology, Type, mode)
                     r_temp.update(fm[0], fm[1], fm[2], fm[3], fm[4])
                     r_temp.writeOut(ontology, Type, mode, "FMAX")
+                    #
+                    #r_temp = r
+                    #wfm = i.check("WFMAX", ontology, Type, mode)
+                    #r_temp.update(wfm[0], wfm[1], wfm[2], wfm[3], wfm[4])
+                    #r_temp.writeOut(ontology, Type, mode, "WFMAX")
                     
-                    r_temp = r
-                    wfm = i.check("WFMAX", ontology, Type, mode)
-                    r_temp.update(wfm[0], wfm[1], wfm[2], wfm[3], wfm[4])
-                    r_temp.writeOut(ontology, Type, mode, "WFMAX")
+                    #r_temp = r                    
+                    #sm = i.check("SMIN", ontology, Type, mode)
+                   # r_temp.update(sm[0], sm[1], sm[2], sm[3], sm[4])
+                    #r_temp.writeOut(ontology, Type, mode, "SMIN")
                     
-                    r_temp = r                    
-                    sm = i.check("SMIN", ontology, Type, mode)
-                    r_temp.update(sm[0], sm[1], sm[2], sm[3], sm[4])
-                    r_temp.writeOut(ontology, Type, mode, "SMIN")
-                    
-                    r_temp = r
-                    nsm = i.check("NSMIN", ontology, Type, mode)
-                    r_temp.update(nsm[0], nsm[1], nsm[2], nsm[3], nsm[4])
-                    r_temp.writeOut(ontology, Type, mode, "NSMIN")
+                    #r_temp = r
+                    #nsm = i.check("NSMIN", ontology, Type, mode)
+                    #r_temp.update(nsm[0], nsm[1], nsm[2], nsm[3], nsm[4])
+                    #r_temp.writeOut(ontology, Type, mode, "NSMIN")
                     
                     #r_temp = r
                     #auc = i.check("AUC", ontology, Type, mode)

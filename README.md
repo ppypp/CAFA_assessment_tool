@@ -28,7 +28,6 @@ For bug reports, comments or questions, please email nzhou[AT]iastate.edu.
 	- Third parameter  `obo_path`      : path of the gene ontology obo file. The latest version can be downloaded [here](http://purl.obolibrary.org/obo/go.obo). Note that the obo file used here should not be older than the one used in the prediction.
 	- Fourth parameter `benchmark_path`: directory of the benchmark folder. Specific formats are required for the benchmark folder, including two sub-directories: groundtruth and lists. Please refer to auxiliary function `benchmark_folder.py` for the creation of this folder, as well as the genral creation of benchmarks. An example benchmark folder is given in this repository `./assessment/benchmark`
 	- Fifth parameter  `results_path`  : Folder where results are saved. A `rawdata` folder will be created within the results folder.
-	- Sixth parameter  `verbosity`     : Whether to print diagnostic info (still being implemented)
 	- Seventh parameter `gaf_path`     : Location of the GAF File with respect to the ICTool directory
 	- Note that only the first section `assessment` of the configuration file is used here, the rest of the configuration file can be ignored for this function	
  - `plot.py`
@@ -54,8 +53,13 @@ Therefore, we here provide functions to convert between UniProt IDs and CAFA3 ID
 	- First function `uniprotac_to_cafaid(taxon, uniprotacs)`.
 	- Second function `cafaid_to_uniprot(taxon, cafaids)`.
 	- Refer to comments in the script `./ID_conversion/ID_conversion.py` and third example below for usage.
- - `./ICTool/IC.py` 
+ - `./ICTool/IC-GAF.py` 
 	- Calculates the Information content of a given OBO
+	- How to use: From the ICTool directory `IC.py ../config.yaml`.
+	-  It uses the assessement config file, so once you have that setup, this will run on the same file set.
+
+ - `./ICTool/IC-LIST.py` 
+	- Calculates the Information content of a given a list of Proteins, Terms and Ontologies.
 	- How to use: From the ICTool directory `IC.py ../config.yaml`.
 	-  It uses the assessement config file, so once you have that setup, this will run on the same file set.
 

@@ -205,8 +205,8 @@ def read_config_PLOT():
         sys.exit()
     Num_files = len(config_dict)-3
     results_folder = config_dict['results']
-    title = config_dict['title']
-    smooth = config_dict['smooth']
+    title          = config_dict['title']
+    smooth         = config_dict['smooth']
     if (smooth == 'Y'):
         s = True
     else:
