@@ -14,8 +14,8 @@ def main():
     DAG, LIST = makeDAG()
     #Read GAF-equivelent 
     # Build A
-    A = makeA(LIST)
-    IC = calculateIC(DAG, A, LIST)
+    #A = makeA(LIST)
+    #IC = calculateIC(DAG, A, LIST)
     
     
 def makeDAG():
@@ -61,20 +61,23 @@ def makeDAG():
     # 3 1D arrays to build COO sparse matrix
         
     BPO = LIST["BPO"] # makes sure same index is used for a term thoughout
-    ROW_INDEX_BPO = np.empty(len(BPO), dtype = int)
-    COL_INDEX_BPO = np.empty(len(BPO), dtype = int)
-    DATA_BPO      = np.empty(len(BPO), dtype = int)
+    print(len(BPO))
+    ROW_INDEX_BPO = []
+    COL_INDEX_BPO = []
+    DATA_BPO      = []
     
     CCO = LIST["CCO"]
-    ROW_INDEX_CCO = np.empty(len(CCO), dtype = int)
-    COL_INDEX_CCO = np.empty(len(CCO), dtype = int)
-    DATA_CCO      = np.empty(len(CCO), dtype = int)
+    print(len(CCO))
+    ROW_INDEX_CCO = []
+    COL_INDEX_CCO = []
+    DATA_CCO      = []
   
-    MFO = LIST["MFO"]    
-    ROW_INDEX_MFO = np.empty(len(MFO), dtype = int)
-    COL_INDEX_MFO = np.empty(len(MFO), dtype = int)
-    DATA_MFO      = np.empty(len(MFO), dtype = int)
-
+    MFO = LIST["MFO"]   
+    print(len(MFO))
+    ROW_INDEX_MFO = []
+    COL_INDEX_MFO = []
+    DATA_MFO      = []
+    
     # Make list of all GO:terms that occur  (split by ontology)  
     for term in allGOterms[1:]:
         split_term = term.split("\n")
@@ -113,19 +116,34 @@ def makeDAG():
                 # where i is Term, j is Term that is in relationship 
                 try:
                     if   namespace == "BPO" and parent_GO_term in BPO:
-                        np.append(ROW_INDEX_BPO, BPO.index(GO_term))
-                        np.append(COL_INDEX_BPO, BPO.index(parent_GO_term))
-                        np.append(DATA_BPO, 1)
+                        r = BPO.index(GO_term)
+                        c = BPO.index(parent_GO_term)
+                        #np.append(ROW_INDEX_BPO, BPO.index(GO_term))
+                        #np.append(COL_INDEX_BPO, BPO.index(parent_GO_term))
+                        #np.append(DATA_BPO, 1)
+                        ROW_INDEX_BPO.append(r)
+                        COL_INDEX_BPO.append(c)
+                        DATA_BPO.append(1)
                         
                     elif namespace == "CCO" and parent_GO_term in CCO:
-                        np.append(ROW_INDEX_CCO, CCO.index(GO_term))
-                        np.append(COL_INDEX_CCO, CCO.index(parent_GO_term))
-                        np.append(DATA_CCO, 1)
-                        
+                        r = CCO.index(GO_term)
+                        c = CCO.index(parent_GO_term)
+                        #np.append(ROW_INDEX_CCO, CCO.index(GO_term))
+                        #np.append(COL_INDEX_CCO, CCO.index(parent_GO_term))
+                        #np.append(DATA_CCO, 1)
+                        ROW_INDEX_CCO.append(r)
+                        COL_INDEX_CCO.append(c)
+                        DATA_CCO.append(1)
                     elif namespace == "MFO" and parent_GO_term in MFO:
-                        np.append(ROW_INDEX_MFO, MFO.index(GO_term))
-                        np.append(COL_INDEX_MFO, MFO.index(parent_GO_term))
-                        np.append(DATA_MFO, 1)
+                        r = MFO.index(GO_term)
+                        c = MFO.index(parent_GO_term)
+                        #print(r)
+                        #print(c)
+                        ROW_INDEX_MFO.append(r)
+                        COL_INDEX_MFO.append(c)
+                        DATA_MFO.append(1)
+                        
+                        #print(len(ROW_INDEX_MFO))
                         
                 except(ValueError):
                     # Term crosses ontolgies or is invalid in some other way
@@ -140,6 +158,10 @@ def makeDAG():
     DAG["CCO"] = CCO_DAG
     DAG["MFO"] = MFO_DAG
     print("DAG is complete")
+    print(BPO_DAG.get_shape)
+    print(CCO_DAG.get_shape)
+    print(MFO_DAG.get_shape)
+    
     return DAG, LIST
 
     
