@@ -1,4 +1,3 @@
-
 import math
 import pickle as cp
 import os
@@ -7,28 +6,35 @@ import sys
 import yaml
 import ICHelper
 import numpy as np
-from scipy.sparse import coo_matrix
+import scipy as sc
+
+def main():
+    # Read OBO
+    # Build DAG
+    DAG, LIST = makeDAG()
+    #Read GAF-equivelent 
+    # Build A
+    A = makeA(LIST)
+    IC = calculateIC(DAG, A, LIST)
     
-def createDAGs():
+    
+def makeDAG():
     '''
-    
+    Read in OBO and make a list of terms for each ontology
     '''
     # Parse OBO
     obo_file = open("/home/mcgerten/cafa3/CAFA3_test_data/gene_ontology_edit.obo.2016-06-01","r")
     allGOterms = obo_file.read().split("[Term]")
+    print("Parsed OBO")
     # Intialize variables
     GO_term   = ""
     namespace = ""
-    relation  = ""
-    # Alt name dictionary 
-    alt_id_to_id = dict()
     # Lists for each namespace
     BPO  = []
     CCO  = []
     MFO  = []
     # 
     LIST = {}
-    DAG  = {}
     
     # Add terms to respective namspace lists
     for term in allGOterms[1:]:
@@ -48,13 +54,27 @@ def createDAGs():
     LIST["BPO"] = BPO
     LIST["CCO"] = CCO
     LIST["MFO"] = MFO
-    # Make Matrices         
-    print(len(BPO))
-    print(len(CCO))
-    print(len(MFO))
-    BPO_DAG = np.zeros((len(BPO), len(BPO)))
-    CCO_DAG = np.zeros((len(CCO), len(CCO)))
-    MFO_DAG = np.zeros((len(MFO), len(MFO)))
+    print("Done making lists")
+    ######### DONE MAKING LIST ###########################    
+    alt_id_to_id = dict()
+    DAG = {}    
+    # 3 1D arrays to build COO sparse matrix
+        
+    BPO = LIST["BPO"] # makes sure same index is used for a term thoughout
+    ROW_INDEX_BPO = np.empty(len(BPO), dtype = int)
+    COL_INDEX_BPO = np.empty(len(BPO), dtype = int)
+    DATA_BPO      = np.empty(len(BPO), dtype = int)
+    
+    CCO = LIST["CCO"]
+    ROW_INDEX_CCO = np.empty(len(CCO), dtype = int)
+    COL_INDEX_CCO = np.empty(len(CCO), dtype = int)
+    DATA_CCO      = np.empty(len(CCO), dtype = int)
+  
+    MFO = LIST["MFO"]    
+    ROW_INDEX_MFO = np.empty(len(MFO), dtype = int)
+    COL_INDEX_MFO = np.empty(len(MFO), dtype = int)
+    DATA_MFO      = np.empty(len(MFO), dtype = int)
+
     # Make list of all GO:terms that occur  (split by ontology)  
     for term in allGOterms[1:]:
         split_term = term.split("\n")
@@ -93,29 +113,47 @@ def createDAGs():
                 # where i is Term, j is Term that is in relationship 
                 try:
                     if   namespace == "BPO" and parent_GO_term in BPO:
-                        BPO_DAG[BPO.index(GO_term)][BPO.index(parent_GO_term)] = 1
+                        np.append(ROW_INDEX_BPO, BPO.index(GO_term))
+                        np.append(COL_INDEX_BPO, BPO.index(parent_GO_term))
+                        np.append(DATA_BPO, 1)
+                        
                     elif namespace == "CCO" and parent_GO_term in CCO:
-                        CCO_DAG[CCO.index(GO_term)][CCO.index(parent_GO_term)] = 1
+                        np.append(ROW_INDEX_CCO, CCO.index(GO_term))
+                        np.append(COL_INDEX_CCO, CCO.index(parent_GO_term))
+                        np.append(DATA_CCO, 1)
+                        
                     elif namespace == "MFO" and parent_GO_term in MFO:
-                        MFO_DAG[MFO.index(GO_term)][MFO.index(parent_GO_term)] = 1
+                        np.append(ROW_INDEX_MFO, MFO.index(GO_term))
+                        np.append(COL_INDEX_MFO, MFO.index(parent_GO_term))
+                        np.append(DATA_MFO, 1)
+                        
                 except(ValueError):
+                    # Term crosses ontolgies or is invalid in some other way
                     print(GO_term)
+    # Make COO sparse matrix                
+    BPO_DAG = sc.sparse.coo_matrix((DATA_BPO, (ROW_INDEX_BPO, COL_INDEX_BPO)))                
+    CCO_DAG = sc.sparse.coo_matrix((DATA_CCO, (ROW_INDEX_CCO, COL_INDEX_CCO)))               
+    MFO_DAG = sc.sparse.coo_matrix((DATA_MFO, (ROW_INDEX_MFO, COL_INDEX_MFO)))               
+                    
     # Store subDAGS into dictionary
     DAG["BPO"] = BPO_DAG
     DAG["CCO"] = CCO_DAG
     DAG["MFO"] = MFO_DAG
     print("DAG is complete")
-    return LIST, DAG
+    return DAG, LIST
 
-
-def createA(LIST):
+    
+def makeA(LIST_Terms):
     '''
     
+    
+    LIST is needed to verify lengths
     '''
-    counter = 0
+    
     BPO = []
     CCO = []
     MFO = []
+    LIST_Protein = {}
     # Load list to memory
     reader = open("/home/mcgerten/cafa3/CAFA3_test_data/uniprot_exp_20170118_withTAS.txt","r")
     # For every annotation, create an id and add to data
@@ -129,130 +167,117 @@ def createA(LIST):
         elif Aspect == "F":
             MFO.append([Protein, GOTerm])
         else:
-            # Die
-            exit
-        if (counter % 1000 == 0):
-            print ("I have done {} annotations".format(counter))
-        counter += 1
- 
-
-    print ("I have done {} annotations".format(counter))
-    # Now have a List inported
-    print(len(BPO))
-    print(len(CCO))
-    print(len(MFO))
-    print(len(LIST["BPO"]))
-    print(len(LIST["CCO"]))
-    print(len(LIST["MFO"]))
-    # Intilize variables
-    #BPO_A = np.zeros((len(BPO), len(LIST["BPO"])))
-    CCO_A = np.zeros((len(CCO), len(LIST["CCO"])))
-    MFO_A = np.zeros((len(MFO), len(LIST["MFO"])))
+            print("Not in valid Ontology")
+    LIST_Protein["BPO"] = BPO
+    LIST_Protein["CCO"] = CCO
+    LIST_Protein["MFO"] = MFO     
+    
+    ################ DONE READING LIST (GAF)
+    # Set and print Lengths of Protien/Term Lists
+    print   (len(LIST_Protein["BPO"]))
+    LP_BPO = len(LIST_Protein["BPO"])
+    print   (len(LIST_Protein["CCO"]))
+    LP_CCO = len(LIST_Protein["CCO"])
+    print   (len(LIST_Protein["MFO"]))
+    LP_MFO = len(LIST_Protein["MFO"])
+    # Set and print Lengths of Term/Term Lists
+    print   (len(LIST_Terms["BPO"]))
+    LT_BPO = len(LIST_Terms["BPO"])
+    print   (len(LIST_Terms["CCO"]))
+    LT_CCO = len(LIST_Terms["CCO"])
+    print   (len(LIST_Terms["MFO"]))
+    LT_MFO = len(LIST_Terms["MFO"])
+    # Intilize arrays
+    ROW_INDEX_BPO = np.empty(LP_BPO, dtype = int)
+    COL_INDEX_BPO = np.empty(LP_BPO, dtype = int)
+    DATA_BPO      = np.empty(LP_BPO, dtype = int)
+    
+    ROW_INDEX_CCO = np.empty(LP_CCO, dtype = int)
+    COL_INDEX_CCO = np.empty(LP_CCO, dtype = int)
+    DATA_CCO      = np.empty(LP_CCO, dtype = int)
+    
+    ROW_INDEX_MFO = np.empty(LP_MFO, dtype = int)
+    COL_INDEX_MFO = np.empty(LP_MFO, dtype = int)
+    DATA_MFO      = np.empty(LP_MFO, dtype = int)
+    
     A = {}
     # {i, j} i is protein, j is GO:term
-    i = 0
     '''
+    # BPO 
+    i = 0
     for item in BPO:
         # Find the index that the term has in the DAG
-        j = LIST["BPO"].index(item[1])
-        # Increment for each new protein
-        BPO_A[i][j] = 1
-        i += 1
-    '''
-    i = 0
-    for item in CCO:
-        # Find the index that the term has in the DAG
         try:
-            j = LIST["CCO"].index(item[1])
+            j = LIST_Terms["BPO"].index(item[1])
+            np.append(ROW_INDEX_BPO, i)
+            np.append(COL_INDEX_BPO, j)
+            np.append(DATA_BPO, 1)
         except ValueError:
             print(item[1])
         # Increment for each new protein
-        CCO_A[i][j] = 1
         i += 1
-        
+    '''
+    # CCO    
+    i = 0
+    for item in CCO:
+        # Find the index that the term has in the DAG
+        print (item)
+        try:
+            j = LIST_Terms["CCO"].index(item[1])
+            print (j)
+            np.append(ROW_INDEX_CCO, i)
+            np.append(COL_INDEX_CCO, j)
+            np.append(DATA_CCO, 1)
+        except ValueError:
+            print(item[1])
+        # Increment for each new protein
+        i += 1
+    '''
+    # MFO    
     i = 0
     for item in MFO:
         # Find the index that the term has in the DAG
         try:
-            j = LIST["MFO"].index(item[1])
+            j = LIST_Terms["MFO"].index(item[1])
+            np.append(ROW_INDEX_MFO, i)
+            np.append(COL_INDEX_MFO, j)
+            np.append(DATA_MFO, 1)
         except ValueError:
             print(item[1])
         # Increment for each new protein
-        MFO_A[i][j] = 1
         i += 1
-    
+    '''
+        
+    # Make A matrices    
+    #A_BPO = sc.sparse.coo_matrix((DATA_BPO, (ROW_INDEX_BPO, COL_INDEX_BPO)))                
+    A_CCO = sc.sparse.coo_matrix((DATA_CCO, (ROW_INDEX_CCO, COL_INDEX_CCO)))               
+    #A_MFO = sc.sparse.coo_matrix((DATA_MFO, (ROW_INDEX_MFO, COL_INDEX_MFO)))               
     # Store in a dictionary    
-    #A["BPO"] = BPO_A
-    A["CCO"] = CCO_A
-    A["MFO"] = MFO_A
+    #A["BPO"] = A_BPO
+    A["CCO"] = A_CCO
+    #A["MFO"] = A_MFO
     print("A is complete")
     return A
-
-def main():
-    '''
-    Get a GAF, Convert, Calculate, and output. 
-    '''
-    # Read Config
     
-    # Create DAG : m-by-m adjancency matrix
-    # DAG(i, j) means i has relationship to j
-    LIST, DAGs = createDAGs()
-    # Create A   : n-by-m, Ontology Annotation matrix
-    # A(i,j) = True, protein i  has annotation j
-    As = createA(LIST)
+def calculateIC(DAGs, As, LIST):
     IC = {}
-    BPO_IC = {}
-    CCO_IC = {}
-    MFO_IC = {}
-    # For each ontology
     #for ontology in ['BPO','CCO','MFO']:
-    for ontology in ['CCO', 'MFO']:
+    for ontology in ['CCO']:
+        I = {}
         DAG  = DAGs[ontology]
         A    = As[ontology]
-        # Validate DAG is square
-        if DAG.shape[0] != DAG.shape[1]:
-            #Die
-            raise ValueError() 
         
         ic = ICcalculator(DAG, A)
+        for term in LIST[ontology]:
+            prob = ic.index(term)
+            I[term] = [prob, -math.log( prob, 2 )]
         # Store in IC dictionary 
-        IC[ontology] = ic
-    # Print / Write IC   
-    #Convert to old format
-    #OLD:         Key: Term, Value: [prob, log]  
-    #for term in LIST["BPO"]:
-    #    prob = ic.index(term)
-    #    BPO_IC[term] = [prob, -math.log( prob, 2 )]
-    for term in LIST["CCO"]:
-        prob = IC["CCO"][LIST["CCO"].index(term)]
-        #CCO_IC[term] = [prob, -math.log( prob, 2 )]
-        CCO_IC[term] = [prob, prob]
-    for term in LIST["MFO"]:
-        prob = IC["MFO"][LIST["MFO"].index(term)]
-        MFO_IC[term] = [prob, prob]
-            
-        
-    # Save IA Map
-    cp.dump(BPO_IC, open("ICdata/ia_BPO.map","wb"))
-    convertToReadable(BPO_IC, "BPO")
-        
-    cp.dump(CCO_IC, open("ICdata/ia_CCO.map","wb"))
-    convertToReadable(CCO_IC, "CCO")
+        IC[ontology] = I
+        cp.dump(IC[ontology], open("ICdata/ia_{}.map".format(ontology), "wb"))
+        convertToReadable(IC[ontology], "{}".format(ontology))
+    return IC
     
-    cp.dump(MFO_IC, open("ICdata/ia_MFO.map","wb"))
-    convertToReadable(MFO_IC, "MFO") 
     
-    print("I'm done")
-    
-def convertToReadable(IC, ontology):
-    '''
-    Convert Map to human readable Values to manually check accuracy
-    '''
-    data  = open("ICdata/IAmap_{}.txt".format(ontology), 'w')
-    for term in IC:
-        data.write('{}\t {}\t {}\n'.format(term, IC[term][0], IC[term][1]))
-
-
 ''' MATLAB equivelent
   for i = 1 : k
       p        = subDAG(i, :); % parent term(s)
@@ -281,7 +306,7 @@ def ICcalculator(DAG, A):
         
     for i in range(0, DAG.shape[0]):
         # Make holder matrix
-        B = np.zeros((A.shape[0],1))
+        B = np.empty((A.shape[0],1))
         print(B)
         print(B.shape[0])
         print(B.shape[1])
@@ -312,12 +337,7 @@ def ICcalculator(DAG, A):
                 del C
                 #print("Matrix B")                
                 #print (B)
-                ####t += np.sum(A[:, j]) #################
-                # HERE IS THE PROBLEM
-                # I am double counting 
-                # need to combine first, letting duplicates get merged
-                # then do the count
-                
+
                 #print("T is {} currently".format(t))
                 
             else:
@@ -372,9 +392,18 @@ def ICcalculator(DAG, A):
             print ("0")
             ic[i] = 0
     return ic
-        
 
     
+def convertToReadable(IC, ontology):
+    '''
+    Convert Map to human readable Values to manually check accuracy
+    '''
+    data  = open("ICdata/IAmap_{}.txt".format(ontology), 'w')
+    for term in IC:
+        data.write('{}\t {}\t {}\n'.format(term, IC[term][0], IC[term][1]))
+    data.close
+
+
 if __name__ == '__main__':
    main()
    
