@@ -63,10 +63,10 @@ def f (precision, recall):
     '''
     
     try:
-        f = (2 * precision * recall) / (precision + recall)
+        fval = (2 * precision * recall) / (precision + recall)
     except ZeroDivisionError:
-        f = None
-    return f
+        fval = None
+    return fval
 
  
 def PRRC_average (info, threshold, ontology, Type, mode):
@@ -163,7 +163,8 @@ def PRRC (info, threshold, protein, ontology, Type, mode):
                 # If it is actually True, increment TP
                 if info.predicted_bench[protein][term][1] :
                     TP += 1
-
+        data.write('Term, Count, TP')                 
+        data.write('{}\t {}\t {}\n'.format(term, count, TP))             
         data.close() 
     # Find PR: TP / (TP + FP)
     try:

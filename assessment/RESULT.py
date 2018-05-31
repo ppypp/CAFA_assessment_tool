@@ -1,16 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 16 13:48:31 2018
-
-@author: mcgerten
-"""
 import helper
-import os
 import numpy
 
-##########################################REFACTOR#############################
-# Its weird to have a class in a file by itself, should just reference the file 
-# -> need to refactor references to this file
 class result:
     ''' Stores results in a common format '''   
     
@@ -33,19 +23,15 @@ class result:
         self.coverage       = 0.0
         
         
-        
-        
-        
     def update(self, subval1, subval2, subval3, value, threshold):
         '''
         Stores the outpu of each metric in a single object
         
         Input:
-        type      : String
-        value     : Float
         subval1   : List[Float]
         subval2   : List[Float]
         subval3   : List[Float]
+        value     : Float
         threshold : Float
         '''
 
@@ -59,6 +45,13 @@ class result:
     def info(self, author, model, keywords, taxon, predictionFile):
         '''
         Store the top level info
+        
+        Input:
+        author           : String
+        model            : String
+        keywords         : List[String]
+        taxon            : String
+        predictionFile   : String
         '''        
         self.author         = author
         self.model          = model
@@ -70,9 +63,15 @@ class result:
     def writeOut(self, Ontology, Type, Mode, tool):
         '''
         Method to dump data to file for evaluation
+        
+        Input:
+        Ontology   : String
+        Type       : String
+        Mode       : String
+        tool       : String
         '''
         
-        # Set Ontology to correct formating
+        # Set Ontology to correct formating (Capitalize) -> Use built in tool?
         if (Ontology == 'mfo'):
             O = 'MFO'
         elif (Ontology == 'bpo'):

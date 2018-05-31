@@ -313,16 +313,16 @@ def WyattClarkIC(data):
     # Propagate ancestors 
     Protein_to_GO_propagated = propagateOntologies(Protein_to_GO)
     # Calculate IA
-    mf_IC, bp_IC, cc_IC  = assignProbabilitiesMULTI(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
+    mf_IC, bp_IC, cc_IC  = assignProbabilities(Protein_to_GO_propagated, all_GO_Terms_in_corpus)
     
     # Save IA Map
-    cp.dump(bp_IC, open("ICdata/ia_BPO.map","wb"))
+    cp.dump(bp_IC, open("ICdata/ia_BPO-L.map","wb"))
     convertToReadable(bp_IC, "BPO")
         
-    cp.dump(cc_IC, open("ICdata/ia_CCO.map","wb"))
+    cp.dump(cc_IC, open("ICdata/ia_CCO-L.map","wb"))
     convertToReadable(cc_IC, "CCO")
     
-    cp.dump(mf_IC, open("ICdata/ia_MFO.map","wb"))
+    cp.dump(mf_IC, open("ICdata/ia_MFO-L.map","wb"))
     convertToReadable(mf_IC, "MFO")
 
  
@@ -331,7 +331,7 @@ def convertToReadable(IC, ontology):
     '''
     Convert Map to human readable Values to manually check accuracy
     '''
-    data  = open("ICdata/IAmap_{}.txt".format(ontology), 'w')
+    data  = open("ICdata/IAmap_{}-L.txt".format(ontology), 'w')
     for term in IC:
         data.write('{}\t {}\t {}\n'.format(term, IC[term][0], IC[term][1]))
 

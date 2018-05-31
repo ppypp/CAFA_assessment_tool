@@ -7,15 +7,32 @@ import yaml
 import ICHelper
 import numpy as np
 import scipy as sc
+import time
 
 def main():
     # Read OBO
     # Build DAG
+    '''
     DAG, LIST = makeDAG()
+    cp.dump(DAG,  open("ICdata/DAG.map",  "wb"))
+    cp.dump(LIST, open("ICdata/LIST.map", "wb"))
+    '''
     #Read GAF-equivelent 
     # Build A
-    #A = makeA(LIST)
-    #IC = calculateIC(DAG, A, LIST)
+    
+    DAG  = cp.load(open("ICdata/DAG.map", "rb"))
+    LIST = cp.load(open("ICdata/LIST.map","rb"))
+    print("DAG / LIST loaded")
+    '''
+    A, LIST_Protein = makeA(LIST)
+    cp.dump(A,            open("ICdata/A.map",            "wb"))
+    cp.dump(LIST_Protein, open("ICdata/LIST_Protein.map", "wb"))
+    '''
+    A            = cp.load(open("ICdata/A.map",           "rb"))
+    LIST_Protein = cp.load(open("ICdata/LIST_Protein.map","rb"))
+    print(" A is loaded")
+    
+    IC = calculateIC(DAG, A, LIST)
     
     
 def makeDAG():
@@ -118,9 +135,6 @@ def makeDAG():
                     if   namespace == "BPO" and parent_GO_term in BPO:
                         r = BPO.index(GO_term)
                         c = BPO.index(parent_GO_term)
-                        #np.append(ROW_INDEX_BPO, BPO.index(GO_term))
-                        #np.append(COL_INDEX_BPO, BPO.index(parent_GO_term))
-                        #np.append(DATA_BPO, 1)
                         ROW_INDEX_BPO.append(r)
                         COL_INDEX_BPO.append(c)
                         DATA_BPO.append(1)
@@ -128,17 +142,12 @@ def makeDAG():
                     elif namespace == "CCO" and parent_GO_term in CCO:
                         r = CCO.index(GO_term)
                         c = CCO.index(parent_GO_term)
-                        #np.append(ROW_INDEX_CCO, CCO.index(GO_term))
-                        #np.append(COL_INDEX_CCO, CCO.index(parent_GO_term))
-                        #np.append(DATA_CCO, 1)
                         ROW_INDEX_CCO.append(r)
                         COL_INDEX_CCO.append(c)
                         DATA_CCO.append(1)
                     elif namespace == "MFO" and parent_GO_term in MFO:
                         r = MFO.index(GO_term)
                         c = MFO.index(parent_GO_term)
-                        #print(r)
-                        #print(c)
                         ROW_INDEX_MFO.append(r)
                         COL_INDEX_MFO.append(c)
                         DATA_MFO.append(1)
@@ -147,7 +156,9 @@ def makeDAG():
                         
                 except(ValueError):
                     # Term crosses ontolgies or is invalid in some other way
-                    print(GO_term)
+                    #print(GO_term)
+                    pass
+    print("Done with relationships")
     # Make COO sparse matrix                
     BPO_DAG = sc.sparse.coo_matrix((DATA_BPO, (ROW_INDEX_BPO, COL_INDEX_BPO)))                
     CCO_DAG = sc.sparse.coo_matrix((DATA_CCO, (ROW_INDEX_CCO, COL_INDEX_CCO)))               
@@ -193,8 +204,21 @@ def makeA(LIST_Terms):
     LIST_Protein["BPO"] = BPO
     LIST_Protein["CCO"] = CCO
     LIST_Protein["MFO"] = MFO     
+    print("DONE reading in proteins to list")
+    # Intilize arrays
+    ROW_INDEX_BPO = []
+    COL_INDEX_BPO = []
+    DATA_BPO      = []
     
+    ROW_INDEX_CCO = []
+    COL_INDEX_CCO = []
+    DATA_CCO      = []
+  
+    ROW_INDEX_MFO = []
+    COL_INDEX_MFO = []
+    DATA_MFO      = [] 
     ################ DONE READING LIST (GAF)
+    
     # Set and print Lengths of Protien/Term Lists
     print   (len(LIST_Protein["BPO"]))
     LP_BPO = len(LIST_Protein["BPO"])
@@ -209,210 +233,192 @@ def makeA(LIST_Terms):
     LT_CCO = len(LIST_Terms["CCO"])
     print   (len(LIST_Terms["MFO"]))
     LT_MFO = len(LIST_Terms["MFO"])
-    # Intilize arrays
-    ROW_INDEX_BPO = np.empty(LP_BPO, dtype = int)
-    COL_INDEX_BPO = np.empty(LP_BPO, dtype = int)
-    DATA_BPO      = np.empty(LP_BPO, dtype = int)
-    
-    ROW_INDEX_CCO = np.empty(LP_CCO, dtype = int)
-    COL_INDEX_CCO = np.empty(LP_CCO, dtype = int)
-    DATA_CCO      = np.empty(LP_CCO, dtype = int)
-    
-    ROW_INDEX_MFO = np.empty(LP_MFO, dtype = int)
-    COL_INDEX_MFO = np.empty(LP_MFO, dtype = int)
-    DATA_MFO      = np.empty(LP_MFO, dtype = int)
     
     A = {}
     # {i, j} i is protein, j is GO:term
-    '''
-    # BPO 
+    
+    # BPO
     i = 0
     for item in BPO:
         # Find the index that the term has in the DAG
         try:
-            j = LIST_Terms["BPO"].index(item[1])
-            np.append(ROW_INDEX_BPO, i)
-            np.append(COL_INDEX_BPO, j)
-            np.append(DATA_BPO, 1)
-        except ValueError:
+            r = i
+            c = LIST_Terms["BPO"].index(item[1])
+            ROW_INDEX_BPO.append(r)
+            COL_INDEX_BPO.append(c)
+            DATA_BPO.append(1)
+        except ValueError:   
             print(item[1])
-        # Increment for each new protein
-        i += 1
-    '''
+        i+=1
+        if (i%10000 == 0):
+            print("I have done {} items in BPO".format(i))
+    
     # CCO    
     i = 0
-    for item in CCO:
+    for item in LIST_Protein["CCO"]:
         # Find the index that the term has in the DAG
-        print (item)
+        #print (item)
         try:
-            j = LIST_Terms["CCO"].index(item[1])
-            print (j)
-            np.append(ROW_INDEX_CCO, i)
-            np.append(COL_INDEX_CCO, j)
-            np.append(DATA_CCO, 1)
+            
+            r = i
+            c = LIST_Terms["CCO"].index(item[1])
+            #print(r)
+            #print(c)
+            
+            ROW_INDEX_CCO.append(r)
+            COL_INDEX_CCO.append(c)
+            DATA_CCO.append(1)
         except ValueError:
             print(item[1])
-        # Increment for each new protein
-        i += 1
-    '''
-    # MFO    
+        i+=1
+        if (i%10000 == 0):
+            print("I have done {} items in CCO".format(i))
+    
+    # MFO
     i = 0
-    for item in MFO:
+    for item in LIST_Protein["MFO"]:
         # Find the index that the term has in the DAG
+        #print (item)
         try:
-            j = LIST_Terms["MFO"].index(item[1])
-            np.append(ROW_INDEX_MFO, i)
-            np.append(COL_INDEX_MFO, j)
-            np.append(DATA_MFO, 1)
+            r = i
+            c = LIST_Terms["MFO"].index(item[1])
+            ROW_INDEX_MFO.append(r)
+            COL_INDEX_MFO.append(c)
+            DATA_MFO.append(1)
         except ValueError:
             print(item[1])
-        # Increment for each new protein
-        i += 1
-    '''
+        i+=1
+        if (i%10000 == 0):
+            print("I have done {} items in MFO".format(i))
+    
         
     # Make A matrices    
-    #A_BPO = sc.sparse.coo_matrix((DATA_BPO, (ROW_INDEX_BPO, COL_INDEX_BPO)))                
+    A_BPO = sc.sparse.coo_matrix((DATA_BPO, (ROW_INDEX_BPO, COL_INDEX_BPO)))                
     A_CCO = sc.sparse.coo_matrix((DATA_CCO, (ROW_INDEX_CCO, COL_INDEX_CCO)))               
-    #A_MFO = sc.sparse.coo_matrix((DATA_MFO, (ROW_INDEX_MFO, COL_INDEX_MFO)))               
+    A_MFO = sc.sparse.coo_matrix((DATA_MFO, (ROW_INDEX_MFO, COL_INDEX_MFO)))               
     # Store in a dictionary    
-    #A["BPO"] = A_BPO
+    A["BPO"] = A_BPO
     A["CCO"] = A_CCO
-    #A["MFO"] = A_MFO
+    A["MFO"] = A_MFO
+    print(A_BPO.get_shape)
+    print(A_CCO.get_shape)
+    print(A_MFO.get_shape)
     print("A is complete")
-    return A
+    return A, LIST_Protein
     
-def calculateIC(DAGs, As, LIST):
+def calculateIC(DAGs, As, LISTs):
     IC = {}
     #for ontology in ['BPO','CCO','MFO']:
-    for ontology in ['CCO']:
+    for ontology in ['BPO']:
+        print(ontology)
         I = {}
         DAG  = DAGs[ontology]
         A    = As[ontology]
-        
-        ic = ICcalculator(DAG, A)
-        for term in LIST[ontology]:
-            prob = ic.index(term)
-            I[term] = [prob, -math.log( prob, 2 )]
+        LIST = LISTs[ontology]
+        #ic = ICcalculator(DAG, A)
+        #cp.dump(ic, open("ICdata/ic_temp_{}.map".format(ontology), "wb"))
+        print("TIME TO CONVERT TO OLD STYLE")
+        ic = cp.load(open("ICdata/ic_temp_{}.map".format(ontology),"rb"))
+        for term in LIST:
+            try:
+                # Get probality
+                prob = ic[LIST.index(term)]
+                I[term] = [prob, prob]
+            except:
+                print("ERROR")
+                I[term] = [0, 0]
         # Store in IC dictionary 
         IC[ontology] = I
         cp.dump(IC[ontology], open("ICdata/ia_{}.map".format(ontology), "wb"))
         convertToReadable(IC[ontology], "{}".format(ontology))
+        print("Done with {}".format(ontology))
     return IC
     
     
 ''' MATLAB equivelent
   for i = 1 : k
-      p        = subDAG(i, :); % parent term(s)
-      support  = all(subA(:, p), 2);
-      S        = sum(support);
-      subia(i) = sum(support & subA(:, i)) / S;
+M1      p        = subDAG(i, :); % parent term(s)
+M2      support  = all(subA(:, p), 2);
+M3      S        = sum(support);
+M4      subia(i) = sum(support & subA(:, i)) / S;
   end
 '''
 def ICcalculator(DAG, A):
     ic = {}
-
-    #DAG = np.matrix([[0,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[0,1,1,0,0],[0,0,1,0,0]])  
-    #A = np.matrix([[1,1,1,1,0],[1,0,1,0,1],[1,1,1,0,0],[1,0,1,0,0]])
-     
-    print("This it TERM to TERM")
-    print(DAG)
-    print(DAG.shape[0])
-    print(DAG.shape[1])
-    #
-    print ("This is protein to Term")
-    print(A)
-    print(A.shape[0])
-    print(A.shape[1])
-    # 0 is columns
-    # 1 is rows
-        
-    for i in range(0, DAG.shape[0]):
+    start_time = time.time()
+    #Convert to CSR/CSC
+    DAG = DAG.tocsr()
+    A   = A.tocsc()    
+    #paralellalize here? Create a pool?) 
+    print("Converted to CSR/CSC")
+    print(time.time() - start_time)
+    # For all terms in ontology
+    for i in range(0, DAG.shape[0]): # 30000 Times at most 
         # Make holder matrix
-        B = np.empty((A.shape[0],1))
-        print(B)
-        print(B.shape[0])
-        print(B.shape[1])
-        parents = DAG[i, :]
-        print (" These are the parents of the {} term".format(i+1))
-        print (parents)
-        print(parents.shape)
-        print(parents.shape[0])
-        # Throw error becuase [x,] instead of [1,x] notation
-        #print(parents.shape[1])
-        s = parents.shape[0]
-        # I know know who the direct ancestor of a Term is/are
-        # For those parents, see how often they occur in A
-        # ie. how many proteins are annotated for a term
-        # Sum for all terms 
-        t = 0
-        #print("parents size should be 5")
-        for j in range(0, s):
-            # If it is a parent
-            #print("I printed the loop index")
-            #print(i)
-            print("This is the value of the {}th item".format(j+1))
-            print(parents.item((j)))
-            if parents.item((j)) == 1:
-                # Count how many times that parent occurs in proteins
-                C = A[:, j]                 
+        B = sc.sparse.csc_matrix((A.shape[0], 1))
+        D = sc.sparse.dok_matrix((A.shape[0], 1))
+        # Get parents for term i (csr format)
+        parents = DAG.getrow(i)
+        s = parents.shape[1]
+        # Convert to DOK for lookup
+        parents = parents.todok()
+        # For all Parent terms
+        for j in range(0, s): # Takes 1/10th sec on a 4000 / 120000 set)
+            p = parents.get((0, j))
+            # If is a parent, p = 1. Use != for sparse matrix speed
+            if p != 0:
+                # Get the column in A for parent term
+                C = A.getcol(j)
+                # Adding two CSC matrices (fast)
+                # Add parent values to B
                 B = B + C
                 del C
-                #print("Matrix B")                
-                #print (B)
-
-                #print("T is {} currently".format(t))
-                
             else:
+                pass 
+        # Find the largest value in B
+        m = B.max() 
+        # Convert to DOK to enable fast O(1) lookup
+        B = B.todok()
+        # For all values in B, create D where a max value in B is 1 in D
+        for k in range(0, B.shape[0]):
+            # For the sparcity warning
+            if B.get((k,0)) != m:
+                # Do nothing to go fast               
                 pass
-        # Now i have the indexes of all parents
-        # Also B will only have values where valid 
-        # may be large values for overlap, but should work
-        
-        # For everything in B, ifind largest m
-        m = 0        
-        for k in range(0, B.shape[0]):
-            print("K is {}".format(k))
-            if B.item((k,0)) > 0:
-                if B.item((k,0)) > m:
-                    m = B.item((k,0))
-                print("Value is currently {}".format(B.item((k,0))))
-                #B[k][0] = 1
             else:
-                B[k][0] = 0
-        # Change m values to 1, all others to 0
-        for k in range(0, B.shape[0]):
-            if B.item((k,0)) == m:
-                B[k][0] = 1
-            else:
-                B[k][0] = 0        
-        # Now B is correct for math
-        # Once have done all parents
-        print("Matrix B")                
-        print (B)
-        denominator = np.sum(B)
-        
-        # Get self
-        Self = np.sum(A[:, i])
-        #print("SELF VALUE")
-        #print (Self)
-        # Get numerator
-        numerator = Self 
-        print("NUMERATOR")
-        print (numerator)
-        print("DENOMINATOR")
-        print (denominator)
-        # Calculate IC
-        print("IC Value")
-        if denominator != 0:
-            ic[i] = numerator / denominator
-            try:
-                print(-math.log(ic[i], 2))
-                ic[i] = -math.log(ic[i], 2)
-            except ValueError: 
-                print("Log Error")
-        else:
-            print ("0")
+                # Update new matrix with only values that matter
+                D[k,0] = 1    
+        # Convert to DOK        
+        a = A.getcol(i).todok()
+        b = D
+        # Piece-wise multiplication, will zero out terms not in both
+        c = a.multiply(b)
+        # Get Num/Dom
+        numerator   = np.sum(c)
+        denominator = np.sum(b)
+        if numerator > denominator:
+            print("Weird")
             ic[i] = 0
+        else:
+            # Calculate IC
+            #print("IC Value")
+            if denominator != 0 and numerator != 0:
+                ic[i] = numerator / denominator
+                try:
+                    
+                    ic[i] = -math.log(ic[i], 2)
+                    #print(ic[i])
+                except ValueError: 
+                    print("Log Error")
+                    ic[i] = 0
+            else:
+                #print ("0")
+                ic[i] = 0
+        if (i%100 == 0):
+            print("I have done {} items".format(i))
+            print("TIME TOTAL ")
+            print(time.time() - start_time)
+            
     return ic
 
     

@@ -137,7 +137,7 @@ def WPRRC(info, threshold, protein, ontology, Type, mode):
     TT_sum = 0.0
     for term in info.true_terms[protein]:
         try: 
-            print (info.ic[term][1] )
+            #print (info.ic[term][1] )
             TT_sum += info.ic[term][1] 
         # When prediction has newer terms than IC 
         except KeyError:

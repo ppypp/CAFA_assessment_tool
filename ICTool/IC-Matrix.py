@@ -220,9 +220,9 @@ def main():
     # Print / Write IC   
     #Convert to old format
     #OLD:         Key: Term, Value: [prob, log]  
-    #for term in LIST["BPO"]:
-    #    prob = ic.index(term)
-    #    BPO_IC[term] = [prob, -math.log( prob, 2 )]
+    for term in LIST["BPO"]:
+        prob = ic.index(term)
+        BPO_IC[term] = [prob, -math.log( prob, 2 )]
     for term in LIST["CCO"]:
         prob = IC["CCO"][LIST["CCO"].index(term)]
         #CCO_IC[term] = [prob, -math.log( prob, 2 )]
