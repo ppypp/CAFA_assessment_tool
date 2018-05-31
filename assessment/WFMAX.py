@@ -7,7 +7,7 @@ import assessment.FMAX as F
 
 def output(info, ontology, Type, mode):
     '''
-    Calculate the wighted harmonic mean.
+    Calculate the weighted harmonic mean.
     
     Input:
     info     : Object

@@ -8,8 +8,23 @@ import sys
 import yaml
 import errno
 import numpy
+import time 
 
 
+
+def printTime(start_time, message):
+    '''
+    Facilate Time broadcasts for optimizing
+    '''
+    
+    if start_time == 0:
+        start_time = time.time()
+    
+    print(message)
+    print(time.time() - start_time)
+    return start_time
+    
+    
 def taxon_name_converter(taxonID):
     '''
     Convert from taxonomy ID to name (i.e. from 9606 to HUMAN）

@@ -2,7 +2,7 @@ import re
 import os
 from collections import defaultdict
 from Ontology.IO import OboIO
-
+from helper import printTime
 
 pr_field         = re.compile("^PR=[0,1]\.[0-9][0-9];$")
 rc_field         = re.compile("^RC=[0,1]\.[0-9][0-9]$")
@@ -270,6 +270,7 @@ class GOPrediction:
         '''
         
         # Initilize Variables
+        start_time = printTime(0, "Start Read")
         visited_states   = []
         n_accuracy       = 0
         first_prediction = True
@@ -301,11 +302,13 @@ class GOPrediction:
                 state = "go_prediction"
             # Check for errors according to state
             if state == "author":
+                printTime(start_time, "Read Author")
                 correct, errmsg = self._author_check(inline)
                 self._handle_error(correct, errmsg, inline)
                 visited_states.append(state)
 
             elif state == "model":
+                printTime(start_time, "Read Model")
                 n_models += 1
                 n_accuracy = 0
                 if n_models > 3:
@@ -318,12 +321,14 @@ class GOPrediction:
                 if n_models == 1:
                     visited_states.append(state)
             elif state == "keywords":
+                printTime(start_time, "Read Keywords")
                 if first_keywords:
                     visited_states.append(state)
                     first_keywords = False
                 correct, errmsg = self._keywords_check(inline)
                 self._handle_error(correct, errmsg, inline)
             elif state == "accuracy":
+                printTime(start_time, "Read Accuracy")
                 if first_accuracy:
                     visited_states.append(state)
                     first_accuracy = False
@@ -340,6 +345,7 @@ class GOPrediction:
                     visited_states.append(state)
                     first_prediction = False
             elif state == "end":
+                printTime(start_time, "Read END")
                 correct, errmsg = self._end_check(inline)
                 self._handle_error(correct, errmsg, inline)
                 visited_states.append(state)
@@ -355,7 +361,7 @@ class GOPrediction:
                 "Check whether all these record types are in your file in the correct order")
             print("AUTHOR, MODEL, KEYWORDS, ACCURACY (optional), predictions, END")
             raise ValueError
-            
+        printTime(start_time, "End Read")    
 
     def read_and_split_and_write(self, obo_path, prediction_path):
         '''

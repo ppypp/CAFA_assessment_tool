@@ -308,8 +308,8 @@ def makeA(LIST_Terms):
     
 def calculateIC(DAGs, As, LISTs):
     IC = {}
-    #for ontology in ['BPO','CCO','MFO']:
-    for ontology in ['BPO']:
+    for ontology in ['BPO','CCO','MFO']:
+    #for ontology in ['BPO']:
         print(ontology)
         I = {}
         DAG  = DAGs[ontology]
@@ -323,6 +323,16 @@ def calculateIC(DAGs, As, LISTs):
             try:
                 # Get probality
                 prob = ic[LIST.index(term)]
+                '''
+                #Convert to base E           
+                print(prob)
+                N = math.log(prob)
+                D = math.log(2)
+                print(N)
+                print(D)
+                prob  = N /D
+                print(prob)
+                '''
                 I[term] = [prob, prob]
             except:
                 print("ERROR")
