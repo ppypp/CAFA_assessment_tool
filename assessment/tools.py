@@ -673,3 +673,14 @@ def vprint(message, priority):
     # Change number for different verbosity
     if priority < 5:
         print(message)
+def clear(location):
+    # Delete old results/ files
+    os.remove(location)
+    vprint("Old Results have been cleared", 1)
+    
+def vwrite(message, location, priority):
+    if priority < 5:
+        # Append to file
+        data = open(location, 'a+')
+        data.write(message)
+        data.close()
