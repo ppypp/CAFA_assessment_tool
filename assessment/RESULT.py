@@ -59,6 +59,22 @@ class result:
         self.taxon          = taxon
         self.predictionFile = predictionFile
         
+    def teamInfo(self, author, model, keywords, taxon, predictionFile):
+        '''
+        Store the top level info
+        
+        Input:
+        author           : String
+        model            : String
+        keywords         : List[String]
+        taxon            : String
+        predictionFile   : String
+        '''        
+        self.author         = author
+        self.model          = model
+        self.keywords       = keywords
+        self.taxon          = taxon
+        self.predictionFile = predictionFile
 
     def writeOut(self, Ontology, Type, Mode, tool):
         '''

@@ -308,7 +308,6 @@ class GOPrediction:
                 visited_states.append(state)
 
             elif state == "model":
-                printTime(start_time, "Read Model")
                 n_models += 1
                 n_accuracy = 0
                 if n_models > 3:
@@ -320,15 +319,15 @@ class GOPrediction:
                 self._handle_error(correct, errmsg, inline)
                 if n_models == 1:
                     visited_states.append(state)
+                    
             elif state == "keywords":
-                printTime(start_time, "Read Keywords")
                 if first_keywords:
                     visited_states.append(state)
                     first_keywords = False
                 correct, errmsg = self._keywords_check(inline)
                 self._handle_error(correct, errmsg, inline)
+                
             elif state == "accuracy":
-                printTime(start_time, "Read Accuracy")
                 if first_accuracy:
                     visited_states.append(state)
                     first_accuracy = False
@@ -338,6 +337,7 @@ class GOPrediction:
                 else:
                     correct, errmsg = self._accuracy_check(inline)
                     # Don't handle this error if its raised #################################################
+                    
             elif state == "go_prediction":
                 correct, errmsg = self._go_prediction_check(inline)
                 self._handle_error(correct, errmsg, inline)
@@ -345,7 +345,7 @@ class GOPrediction:
                     visited_states.append(state)
                     first_prediction = False
             elif state == "end":
-                printTime(start_time, "Read END")
+                
                 correct, errmsg = self._end_check(inline)
                 self._handle_error(correct, errmsg, inline)
                 visited_states.append(state)
@@ -360,8 +360,7 @@ class GOPrediction:
             print(
                 "Check whether all these record types are in your file in the correct order")
             print("AUTHOR, MODEL, KEYWORDS, ACCURACY (optional), predictions, END")
-            raise ValueError
-        printTime(start_time, "End Read")    
+            raise ValueError   
 
     def read_and_split_and_write(self, obo_path, prediction_path):
         '''
