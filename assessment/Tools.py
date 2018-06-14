@@ -295,17 +295,17 @@ class Info:
             
             #vprint(terms_with_IC, 5)
             badTerms = terms - terms_with_IC
-            vprint("Bad terms Set: {}".format(badTerms),5)
+            vprint("Bad terms Set: {}".format(badTerms), 15)
             # Bad terms are those without IC
             terms = terms - badTerms
-            vprint("Terms Set: {}".format(terms),5)
+            vprint("Terms Set: {}".format(terms), 15)
             countPositive = 0
             countNegative = 0
             positive = truth
-            vprint("Positive Set: {}".format(positive), 5)
+            vprint("Positive Set: {}".format(positive), 15)
             # Set difference
             negative = terms - truth
-            vprint("Negative Set: {}".format(negative), 5)
+            vprint("Negative Set: {}".format(negative), 15)
             for term in terms:
                 if term in positive:
                     countPositive += 1
