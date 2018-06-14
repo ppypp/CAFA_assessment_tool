@@ -53,6 +53,7 @@ class Data:
         self.ontology        = ontology
         self.Type            = Type
         vprint ("Running {}, {}".format(ontology, Type), 1)
+        self.Info            = defaultdict(list)
         
 
     def setTeamInfo(self, author, model, keywords, taxon):
@@ -82,9 +83,41 @@ class Data:
         self.OBOCount = OBOCounts[self.ontology]
         vprint("OBO Count for {} : {}".format(self.ontology, self.OBOCount), 9)
         self.TermAncestors = Benchmark.ancestors
-        vprint("Term Ancestors", 10)
+        vprint("Term Ancestors", 10)def total(info, T, P):
+    '''
+    Sum the IC of all terms
+    
+    Input:
+    info       : Object
+    T   : Set [ Truth      ]
+    P   : Set [ Prediction ]
+    
+    Output:
+    [0] : Float
+    '''
+    
+    # Sum of IC values of terms meeting criteria   
+    total = 0.0
+    # Sum the IC values of every element in T or P
+    # Add all truths
+    for term in T:
+        try:
+            total += info.ic[term][1]
+ 'w')
+        except KeyError:
+            pass
+    # Add predictions that are not truths
+    for term in P:
+        if term not in T:
+            try:
+                total += info.ic[term][1]
+            except KeyError:
+                pass
+    return total
+    
         self.ProteinTrueTerms = Benchmark.ProteinTrueTerms
         vprint("Protein True Terms", 10)
+        self.TrueTermsCount = len(Benchmark.ProteinTrueTerms)
         
         
     def setIC(self, ic_path):
@@ -175,7 +208,7 @@ class Data:
         else:
             print('No prediction made in this ontology.\n')
 
-            
+'''            
     def buildLists(self):
         '''
 
@@ -183,7 +216,7 @@ class Data:
         
         for term in self.IC_dict:
             self.Terms.append(term)
-            self.IC.append(self.IC[term])
+            self.IC.append(self.IC_dict[term])
         for protein in self.Prediction:   
             vprint("Protein: {}".format(protein), 3)
             PL    = [0 for i in range(len(self.Terms))]
@@ -198,7 +231,20 @@ class Data:
                     vprint("Term not in Terms: {}".format(term),3)
             self.PredictionConfidence[protein] = PL
             self.Truth[protein]                = Truth
-        
+'''            
+            
+    def setInfo(self):
+        vprint("Set Info", 1)
+        for protein in self.Prediction: 
+            for term in self.Prediction[protein]:
+                self.Info[protein].append(
+                { 'Term'      : term, 
+                  'IC'        : self.IC_dict[term], 
+                  'Confidence': self.Prediction[protein][term][0], 
+                  'Truth'     : self.Prediction[protein][term][1]
+                  })
+                vprint(self.Info, 1)
+                
         
     def coverage(self):
         ''' 
@@ -276,7 +322,13 @@ def assessMetrics(data, mode):
     assessAllProteins(data)
     # for each metric
     # Make result object
-    
+    # Run over all threshold values from 0 to 1, two signifigant digits
+    for threshold in numpy.arange(0.00, 1.01, 0.01, float):
+        threshold = numpy.around(threshold, decimals = 2)
+        
+        
+        
+        
     #Do work
     #Store in Results
     
@@ -502,7 +554,7 @@ class benchmark:
         ancestor_path  : String    ontology specific file location
         '''
         
-        # Key: protein
+        # Key: term
         # Value: set of benchmark leaf terms
         self.ancestors = defaultdict(set)
         # Read GO ancestors file generated with go_ontology_ancestors_split_write()

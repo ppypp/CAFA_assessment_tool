@@ -47,7 +47,8 @@ if __name__=='__main__':
             data.setIC(ic_path)
             data.setBenchmark(taxon, obocounts, benchmark_directory)
             data.setPrediction()
-            data.buildLists()
+            #data.buildLists()
+            data.setInfo()
             vprint("Done building benchmark / prep work)", 9)
             # For each mode
             for mode in ['partial', 'full']:
