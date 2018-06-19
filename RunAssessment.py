@@ -43,7 +43,7 @@ if __name__=='__main__':
     
     # RUN ON ALL GROUPS
     # For each ontology
-    for ontology in ['CCO']:
+    for ontology in ['MFO']:
     #for ontology in ['BPO','CCO','MFO']:
         vprint(ontology,1)
         
@@ -86,9 +86,13 @@ if __name__=='__main__':
             vprint("Saved Final Info",1)
             #info = cp.load(open("Info.info","rb"))
             
-            vprint("Done  prep work)", 9)
+            vprint("Done prep work", 9)
             # For each mode
             for mode in ['partial', 'full']:
+                # Threshold 0 should have the most proteins
+                if(info.ProteinInPrediction[0.0] == 0):
+                    vprint("No predicted proteins", 1)                    
+                    continue
                 info.setMode(mode)
                 vprint("Mode: {}".format(mode), 9)
                 # RUN METRICS

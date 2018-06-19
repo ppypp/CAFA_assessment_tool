@@ -139,13 +139,13 @@ def PRRC (info, threshold, protein, ontology, Type, mode):
     
     # Initalize Variables
     TP = 0.0     # True positive
-    count = 0    # Count how many terms are above the threshold
-    TT_length = len(info.true_terms[protein]) # Number of True terms
+    POS = 0    # Count how many terms are above the threshold
+    TRUE = len(info.true_terms[protein]) # Number of True terms
     
     
     if(threshold == 0):
-        TP = TT_length
-        count = info.obocount
+        TP = TRUE
+        POS = info.obocount
         
     else:
         data  = open(info.path + "/FMAX/{}/{}/{}/{}/{}.txt".format(ontology, Type, mode, threshold, protein), 'w')
@@ -153,27 +153,27 @@ def PRRC (info, threshold, protein, ontology, Type, mode):
         for term in info.predicted_bench[protein]:
          # If it is above the threshold, increment the count
             if info.predicted_bench[protein][term][0] >= threshold:
-                count += 1
+                POS += 1
                 # Write to file
                 try:
-                    data.write('{}\t {}\t {}\n'.format(term, count, info.predicted_bench[protein][term][1])) 
+                    data.write('{}\t {}\t {}\n'.format(term, POS, info.predicted_bench[protein][term][1])) 
                 except KeyError:
-                    data.write('{}\t {}\t {}\n'.format(term, count, "KEY ERROR")) 
+                    data.write('{}\t {}\t {}\n'.format(term, POS, "KEY ERROR")) 
                 
                 # If it is actually True, increment TP
                 if info.predicted_bench[protein][term][1] :
                     TP += 1
-        data.write('Term, Count, TP')                 
-        data.write('{}\t {}\t {}\n'.format(term, count, TP))             
+            data.write('Term, Count, TP')                 
+            data.write('{}\t {}\t {}\n'.format(term, POS, TP))             
         data.close() 
     # Find PR: TP / (TP + FP)
     try:
-        precision = TP / count 
+        precision = TP / POS 
     except ZeroDivisionError:
         precision = None
     # Find RC: TP / (TP + FN)
     try:
-        recall = TP / TT_length
+        recall = TP / TRUE
     except ZeroDivisionError:
         recall = None
     

@@ -59,6 +59,7 @@ class Info:
         self.Type                   = Type
         self.mode                   = ""
         
+        self.Coverage               = -1
         
         # FOR Benchmark inporting
         self.Benchmark              = None
@@ -229,7 +230,6 @@ class Info:
                     # Update the confidence
                     self.prediction[protein][ancterm] = confidence
                             
-            
         
     def getObsolete(self):
         ''' 
@@ -252,8 +252,8 @@ class Info:
                 if self.prediction[protein][term] > self.maxConfidence[protein]:
                     self.maxConfidence[protein] = self.prediction[protein][term]
         vprint("Max Confidence : {} ".format(self.maxConfidence), 15)    
-        # Generate protein in prediction count for each threshold
         
+        # Generate protein in prediction count for each threshold
         for threshold in numpy.arange(0.00, 1.01, 0.01, float):
             threshold = numpy.around(threshold, decimals = 2)
             total = 0
@@ -261,7 +261,7 @@ class Info:
                 if self.maxConfidence[protein] >= threshold:
                     total += 1
             self.ProteinInPrediction[threshold] = total
-            vprint("Proteins at {} : {}".format(threshold, self.ProteinInPrediction[threshold]), 10)
+            vprint("ProteinInPrediction at {} : {}".format(threshold, self.ProteinInPrediction[threshold]), 10)
         
         # Generate Terms and truths
         terms = set()
@@ -279,11 +279,19 @@ class Info:
         
         print("Info has been set")
         self.generateIntermediateData()
+        self.Coverage = self.coverage()
         # Ready to run metrics now
         return True 
     
     ################### Actual work for metrics ##################   
     def generateIntermediateData(self):
+        '''
+        Generate and store the stat values in order to calculate metrics
+        
+        Input:
+        
+        Output:
+        '''
         for protein in self.prediction:
             terms       = self.terms[protein]
             truth       = self.truth[protein]
@@ -299,18 +307,16 @@ class Info:
             # Bad terms are those without IC
             terms = terms - badTerms
             vprint("Terms Set: {}".format(terms), 15)
-            countPositive = 0
-            countNegative = 0
+            
             positive = truth
             vprint("Positive Set: {}".format(positive), 15)
             # Set difference
             negative = terms - truth
             vprint("Negative Set: {}".format(negative), 15)
-            for term in terms:
-                if term in positive:
-                    countPositive += 1
-                if term in negative:
-                    countNegative += 1  
+            # Get counts of terms
+            countPositive = len(positive)
+            countNegative = len(negative) 
+            # For each threshold, find values
             for threshold in numpy.arange(0.00, 1.01, 0.01, float):
                 threshold = numpy.around(threshold, decimals = 2)
                 FP  = 0
@@ -319,10 +325,10 @@ class Info:
                 FN  = 0 
                    
                 for term in prediction:
-                    if (prediction[term] > threshold 
+                    if (prediction[term] >= threshold 
                         and term in negative):
                         FP += 1
-                    if (prediction[term] > threshold 
+                    if (prediction[term] >= threshold 
                         and term in positive):
                         TP += 1       
                             
@@ -349,11 +355,13 @@ class Info:
                 if term in positive:
                     try:
                         weightedPositive += ic[term]
+                        vprint("{} added to WP".format(ic[term]), 7)
                     except KeyError:
                         vprint("{} has no IC value".format(term), 5) 
                 if term in negative:
                     try:
                         weightedNegative += ic[term]   
+                        vprint("{} added to WN".format(ic[term]), 7)
                     except KeyError:
                         vprint("{} has no IC value".format(term), 5)  
             for threshold in numpy.arange(0.00, 1.01, 0.01, float):
@@ -363,24 +371,30 @@ class Info:
                 TP = 0
                 FN = 0
                 for term in prediction:
-                   if (prediction[term] > threshold 
+                   if (prediction[term] >= threshold 
                        and term in negative):
                            
                        try:
                            FP += ic[term]
+                           vprint("{} added to FP".format(ic[term]), 7)
                        except KeyError:
                            vprint("{} has no IC value".format(term), 5) 
-                   if (prediction[term] > threshold 
+                   if (prediction[term] >= threshold 
                        and term in positive):
                            
                        try:        
-                           TP += ic[term]       
+                           TP += ic[term]
+                           vprint("{} added to TP".format(ic[term]), 7)
                        except KeyError:
                            vprint("{} has no IC value".format(term), 5) 
                 FP = FP
+                vprint("{} at {}  has FP : {}".format(protein, threshold, FP), 6) 
                 TN = weightedNegative - FP
+                vprint("{} at {}  has TN : {}".format(protein, threshold, TN), 6)
                 TP = TP
+                vprint("{} at {}  has TP : {}".format(protein, threshold, TP), 6)
                 FN = weightedPositive - TP
+                vprint("{} at {}  has FN : {}".format(protein, threshold, FN), 6)
                 POS = TP + FP
                 NEG = FN + TN
                 TRUE = TP + FN
@@ -389,7 +403,8 @@ class Info:
                 self.data[protein][threshold] = {
                   'FP':FP, 'TN':TN, 'TP':TP, 'FN':FN, 
                   'POS':POS, 'NEG':NEG, 'TRUE':TRUE,'FALSE':FALSE, 'TOT':TOT}
-        
+            #vprint(self.data, 1)
+                
         print ("Done with Intermediate value creation")      
         return True
     
@@ -428,7 +443,7 @@ class Info:
 ###################### HELPER FUNCTIONS ###################
 def vprint(message, priority):
     # Change number for different verbosity
-    if priority < 11:
+    if priority < 6:
         print(message)
 def clear(location):
     # Delete old results/ files
@@ -436,7 +451,7 @@ def clear(location):
     vprint("Old Results have been cleared", 1)
     
 def vwrite(message, location, priority):
-    if priority < 5:
+    if priority < 6:
         # Append to file
         data = open(location, 'a+')
         data.write(message)
