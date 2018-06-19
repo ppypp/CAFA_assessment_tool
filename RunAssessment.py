@@ -97,7 +97,7 @@ if __name__=='__main__':
                 vprint("Mode: {}".format(mode), 9)
                 # RUN METRICS
                 #print("FMAX")
-                #print(FMAX(info))
+                print(FMAX(info))
                 #print("WFMAX")
                 #print(WFMAX(info))
                 #print("SMIN")

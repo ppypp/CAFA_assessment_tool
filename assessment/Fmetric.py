@@ -7,7 +7,7 @@ def FMAX(Info):
     
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
         threshold = numpy.around(threshold, decimals = 2)
-        vprint("Threshold is {}".format(threshold),5)
+        #vprint("Threshold is {}".format(threshold),5)
         pr = PR(Info, threshold)
         vprint("PR is {}".format(pr),5)
         rc = RC(Info, threshold)
@@ -39,7 +39,7 @@ def PR(Info, threshold):
         except KeyError:
             vprint("Protein: {}".format(protein),5)
     
-    vprint("ProteinInPrediction: {}".format(Info.ProteinInPrediction[threshold]),5)    
+    #vprint("ProteinInPrediction: {}".format(Info.ProteinInPrediction[threshold]),5)    
     # Divide by m(T)    
     try:    
         precision = total / Info.ProteinInPrediction[threshold] 
@@ -67,10 +67,10 @@ def RC(Info, threshold):
             vprint("Protein: {}".format(protein), 5)
             
     if Info.mode == "full":
-        vprint("Recall Divide Full: {}".format(Info.ProteinInBenchmark),5)
+        #vprint("Recall Divide Full: {}".format(Info.ProteinInBenchmark),5)
         recall = total / Info.ProteinInBenchmark
     else: # "partial"
-        vprint("Recall Divide Partial: {}".format(Info.ProteinInPrediction[0.00]),5)
+        #vprint("Recall Divide Partial: {}".format(Info.ProteinInPrediction[0.00]),5)
         recall = total / Info.ProteinInPrediction[0.00]     
     return recall
 
