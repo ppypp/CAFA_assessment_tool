@@ -122,19 +122,19 @@ if __name__=='__main__':
                 clear(path)
                 print("FMAX")
                 F = FMAX(info)
-                vwrite("FMAX: {}".format(F))
+                vwrite("FMAX: {}".format(F), 1)
                 
                 print("WFMAX")
                 WF = WFMAX(info)
-                vwrite("WFMAX: {}".format(F))
+                vwrite("WFMAX: {}".format(F), 1)
                 
                 print("SMIN")
                 S = SMIN(info)
-                vwrite("SMIN: {}".format(F))
+                vwrite("SMIN: {}".format(F), 1)
                 
                 print("NSMIN")
                 NS = NSMIN(info)
-                vwrite("NSMIN: {}".format(F))
+                vwrite("NSMIN: {}".format(F), 1)
                 
                 vprint("Done", 1)
                 getTime(info.start_time)
