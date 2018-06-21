@@ -77,7 +77,7 @@ def PR(Info, threshold):
             try:
                 total += TP / POS
             except ZeroDivisionError:
-                vprint("Protein {} had a 0 POS".format(protein), 4)
+                vprint("Protein {} had a 0 POS @ {}".format(protein, threshold), 14)
         # Bad Error
         except KeyError:
             vprint("Protein: {} has no POS".format(protein), 1)
@@ -89,7 +89,8 @@ def PR(Info, threshold):
         vprint("No protein predicted at {}".format(threshold), 4)
         precision = 0
     vwrite('Precision: {:.2f}\n'.format(precision), Info.local_path, 1)
-    # Return the calculated Precision
+    
+    # Return the calculated Precision    
     return precision
 
 
@@ -118,7 +119,7 @@ def RC(Info, threshold):
             try:
                 total += TP / TRUE
             except ZeroDivisionError:
-                vprint("Protein {} had a 0 TRUE".format(protein), 4)
+                vprint("Protein {} had a 0 TRUE @ {}".format(protein, threshold), 14)
         # Bad Error
         except KeyError:
             vprint("Protein: {} has no TRUE".format(protein), 1)
@@ -130,6 +131,7 @@ def RC(Info, threshold):
     else: # "partial"
         recall = total / Info.ProteinInPrediction[0.00] 
     vwrite('Recall: {:.2f}\n'.format(recall), Info.local_path, 1)
+    
     # Return the calculated Recall
     return recall
 

@@ -77,19 +77,22 @@ def PR(Info, threshold):
             try:
                 total += TP / POS
             except ZeroDivisionError:
-                vprint("Protein {} had a 0 POS".format(protein), 4)
+                vprint("Protein {} had a 0 POS @ {}".format(protein, threshold), 4)
+                # Everytime a protein has no POS, ie. POS: 0, 
+                # Means that there is no predicted terms, dont count protein
         # Bad Error
         except KeyError:
             vprint("Protein: {} has no POS".format(protein), 1)
         vwrite('Protein: {}\t TP: {}\t POS: {}\n'.format(protein, TP, POS), Info.local_path, 1)
     # Divide by m(T) (# of proteins with at least one prediction @ threshold)   
     try:    
-        precision = total / Info.ProteinInPrediction[threshold] 
+        precision = total / (Info.ProteinInPrediction[threshold])
     except ZeroDivisionError:
         vprint("No protein predicted at {}".format(threshold), 4)
         precision = 0
     vwrite('Precision: {:.2f}\n'.format(precision), Info.local_path, 1)
-    # Return the calculated Precision
+    
+    # Return the calculated Precision    
     return precision
 
 
@@ -114,21 +117,30 @@ def RC(Info, threshold):
             vprint("TP : {}".format(TP),15)
             # Get the TRUE (TP + FN) (Truth)
             TRUE = Info.data_unweighted[protein][threshold]['TRUE'] 
-            vprint("TRUE : {}".format(TRUE),15)
+            vprint("TRUE : {}".format(TRUE), 15)
             try:
                 total += TP / TRUE
             except ZeroDivisionError:
-                vprint("Protein {} had a 0 TRUE".format(protein), 15)
+                vprint("Protein {} had a 0 TRUE @ {}".format(protein, threshold), 4)
+                # Evreytime a protein has no TRUE, ie. TRUE: 0, dont count protein
+                # Means there are no True terms in benchmark
+                #This should NEVER happen for FMAX
         # Bad Error
         except KeyError:
             vprint("Protein: {} has no TRUE".format(protein), 1)
         vwrite('Protein: {}\t TP: {}\t TRUE: {}\n'.format(protein, TP, TRUE), Info.local_path, 1)
     # If in full mode, divide by N (# proteins in benchmark)    
     if Info.mode == "full":
+        # ProteinInBenchmark should never be 0
         recall = total / Info.ProteinInBenchmark
     # If in partial mode, divide by m(0) (# proteins in prediction)
     else: # "partial"
-        recall = total / Info.ProteinInPrediction[0.00]
+        try:    
+            recall = total / (Info.ProteinInPrediction[0.00])
+        except ZeroDivisionError:
+            vprint("No protein predicted at 0", 4)
+            recall = 0
+        
     vwrite('Recall: {:.2f}\n'.format(recall), Info.local_path, 1)
     # Return the calculated Recall
     return recall

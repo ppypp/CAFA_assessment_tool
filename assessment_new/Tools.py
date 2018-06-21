@@ -68,6 +68,7 @@ class Info:
         # FOR Benchmark inporting
         self.Benchmark              = None
         self.OBOCount               = 0
+        self.OBOICTotal             = 0
         # KEY: GoTerm                  Value: GoTerm
         self.TermAncestors          = defaultdict()
         # KEY: Protein                 Value: GoTerm
@@ -153,19 +154,23 @@ class Info:
         # Load dictionary using pickle
         IC_old = cp.load(open("{}ia_{}.map".format(ic_path, self.ontology), "rb"))
         IC = {}
+        total = 0
         # Convert legacy IC format to format used in the program
         for term in IC_old:
             vprint("Term : {}".format(term), 10 )
             vprint("IC   : {}".format(IC_old[term][1]), 10)
             IC[term] = IC_old[term][1]
+            total += IC[term]
         # Store convert IC values
-        self.IC = IC    
+        self.IC = IC   
+        self.OBOICTotal = total
         vprint(self.IC, 15)
         #Set path
         path  = self.ResultPath + "/IC.txt"
         clear(path)
         for term in IC:        
             vwrite("{} : {:.2f}\n".format(term, IC[term]), path, 1)
+        
         
     def setPaths(self, results_path, prediction_path, obo_path, path):  
         '''
@@ -184,6 +189,7 @@ class Info:
         self.Path = path
         vprint("Path: {}".format(self.Path), 9)
         
+        
     def setPrediction(self):
         '''
         Read in the prediction file and convert to usable format
@@ -193,9 +199,10 @@ class Info:
         self.ProteinInBenchmark = 0
         PredictionProteinTemp = defaultdict(list)  
         # If the file exists
-        if os.path.getsize(self.Path) > 0:
+        if os.path.isfile(self.Path):
             # Read in prediction file   
-            for inrec in open(self.Path,'r'):
+            handle = open(self.Path,'r')
+            for inrec in handle:
                 fields     = [i.strip() for i in inrec.split()]
                 protein    = fields[0]
                 vprint("Protein: {}".format(protein), 15)
@@ -206,6 +213,8 @@ class Info:
                 # Store prediction in temporary dictionary
                 PredictionProteinTemp[protein].append(
                         {'term': term, 'confidence': confidence})
+            # Close to be filesafe
+            handle.close()
             # Propagate prediction
             for protein in PredictionProteinTemp:
                 vprint("Protein: {}".format(protein), 15)
@@ -257,7 +266,11 @@ class Info:
         [0] : Float       coverage of the prediction
         '''
         
-        return float(self.ProteinInPrediction[0.00])/self.ProteinInBenchmark  
+        try:
+            cover = float(self.ProteinInPrediction[0.00])/self.ProteinInBenchmark
+            return cover
+        except ZeroDivisionError:
+            return None
         
         
     def update_confidence(self, protein, term, confidence):
@@ -362,7 +375,7 @@ class Info:
             truth       = self.truth[protein]
             prediction  = self.prediction[protein]
             ic          = self.IC
-            # Get the subset of terms that have IC values
+            '''# Get the subset of terms that have IC values
             terms_with_IC = terms & ic.keys()
             # Create a list of terms that dont have IC values 
             badTerms = terms - terms_with_IC
@@ -370,8 +383,9 @@ class Info:
             # Bad terms are those without IC
             # Remove bad terms from terms
             terms = terms - badTerms
+            '''
             ########################################################
-            # ????
+            '''# ????
             # Remove IC-less terms from prediction   
             # Get Prediction Terms that have IC
             prediction_with_IC = prediction.keys() & ic.keys()
@@ -385,7 +399,7 @@ class Info:
                 except KeyError:
                     pass
             # NOW the prediction dictionary won't have non-IC terms
-            # IS this desired, not sure
+            '''# IS this desired, not sure
             ########################################################
             vprint("Terms Set: {}".format(terms), 15)
             # true is all the terms in truth (ProteinTrueTerms) 
@@ -440,6 +454,12 @@ class Info:
                 POS = TP + FP
                 # Negative Prediction (Not Predicted)
                 NEG = FN + TN
+                
+                #SPECIAL CASE T = 0 
+                if(threshold == 0.00):                
+                    TP = TRUE                
+                    POS = self.OBOCount
+                
                 # Data_unweighted is for FMAX (Not using IC values)
                 self.data_unweighted[protein][threshold] = {
                  'FP':FP, 'TN':TN, 'TP':TP, 'FN':FN, 
@@ -534,6 +554,12 @@ class Info:
                 # as both those should have the same IC sum
                 TOT = Info.tot(ic, truth, prediction)
                 vprint("{} at {:.2f}  has TOT : {}".format(protein, threshold, FN), 6)
+                
+                #SPECIAL CASE T = 0
+                if(threshold == 0.00):                 
+                    TP  = TRUE
+                    POS = self.OBOICTotal
+                
                 # Store values
                 self.data[protein][threshold] = {
                   'FP':FP, 'TN':TN, 'TP':TP, 'FN':FN, 
@@ -601,7 +627,7 @@ def vprint(message, priority):
     Change number for different verbosity
     '''
     
-    if priority < 4:
+    if priority < 5:
         print(message)
         
         

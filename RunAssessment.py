@@ -101,40 +101,47 @@ if __name__=='__main__':
             getTime(info.start_time)
             #info = cp.load(open("Temp/Info.info","rb"))
             
-            #TESTING AREA            
-            #print(info.ProteinTrueTerms["T96060007002"])
-            
             
             vprint("Done prep work", 1)
             # For each mode
             for mode in ['partial', 'full']:
             #for mode in ['full']:
                 # Threshold 0 should have the most proteins
-                if(info.ProteinInPrediction[0.0] == 0):
+                # If no coverage, there is no prediction. Skip!
+                if(info.ProteinInPrediction[0.0] == 0 or info.Coverage is None):
                     vprint("No predicted proteins", 1)                    
                     continue
+                
+      
+                
                 info.setMode(mode)
                 vprint("Mode: {}".format(mode), 1)
                 getTime(info.start_time)
                 # RUN METRICS
                 # Set root path                
-                path = "{}\{}_{}_{}_Results".format(info.ResultPath, ontology, Type, mode)
-                clear(path)
+                summary_path = "{}/{}_{}_{}_Results".format(info.ResultPath, ontology, Type, mode)
+                clear(summary_path)
                 print("FMAX")
                 F = FMAX(info)
-                vwrite("FMAX: {}".format(F), 1)
+                vwrite("FMAX: {}".format(F), summary_path, 1)
                 
                 print("WFMAX")
                 WF = WFMAX(info)
-                vwrite("WFMAX: {}".format(F), 1)
+                vwrite("WFMAX: {}".format(F), summary_path, 1)
                 
                 print("SMIN")
                 S = SMIN(info)
-                vwrite("SMIN: {}".format(F), 1)
+                vwrite("SMIN: {}".format(F), summary_path, 1)
                 
                 print("NSMIN")
                 NS = NSMIN(info)
-                vwrite("NSMIN: {}".format(F), 1)
+                vwrite("NSMIN: {}".format(F), summary_path, 1)
+                
+                
+                #TESTING AREA            
+                vprint("Coverage: {}".format(info.Coverage), 1)
+                vprint("ProteinInPrediction[0.00] : {}".format(info.ProteinInPrediction[0.00]), 1)
+                vprint("ProteinInBenchmark : {}".format(info.ProteinInBenchmark), 1)
                 
                 vprint("Done", 1)
                 getTime(info.start_time)

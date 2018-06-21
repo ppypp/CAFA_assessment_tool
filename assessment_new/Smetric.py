@@ -84,7 +84,8 @@ def RU(Info, threshold):
         div = Info.ProteinInPrediction[0.00]
         remain = total / div
     vwrite("Total: {:.2f},\t Ne: {},\t RU: {:.2f}\n".format(total, div, remain), Info.local_path, 1)
-    # Return the calculated Remaining Uncertainity
+    
+    # Return the calculated Remaining Uncertainity    
     return remain
 
 
@@ -120,8 +121,11 @@ def MI(Info, threshold):
         div = Info.ProteinInPrediction[0.00]  
         misinfo = total / div
     vwrite("Total: {:.2f},\t Ne: {},\t MI: {:.2f}\n".format(total, div, misinfo), Info.local_path, 1)
-    # Return the calculated Misinformation    
-    return misinfo
+    
+    # Return the calculated Misinformation  
+    return misinfo   
+      
+    
 
 
 def S(ru, mi):
