@@ -27,18 +27,19 @@ def FMAX(Info):
         data = "{}/{}/FMAX_Data.txt".format(path, threshold)
         # Delete old threshold file
         clear(data)
+        clear("{}-Protein.txt".format(data))
         # Store for inner methods
         Info.local_path = data       
-        vprint("Threshold is {}".format(threshold), 5)
+        vprint("Threshold is {}".format(threshold), 15)
         # PR for this prediction @ threshold
         pr = PR(Info, threshold)
-        vprint("PR is {}".format(pr), 5)
+        vprint("PR is {}".format(pr), 15)
         # RC for this prediction @ threshold
         rc = RC(Info, threshold)
-        vprint("RC is {}".format(rc), 5)
+        vprint("RC is {}".format(rc), 15)
         # F-val for this prediction @ threshold
         Fval = F(pr,rc)
-        vprint("The F-val at {:.2f} is {}".format(threshold, Fval), 5)
+        vprint("The F-val at {:.2f} is {}".format(threshold, Fval), 15)
         # Write to overview
         vwrite("Threshold: {:.2f},\t PR: {:.4f},\t RC: {:.4f},\t F: {:.4f}\n".format(threshold, pr, rc, Fval), overview, 1)
         # Check if F-val is greater than current F-max
@@ -75,8 +76,11 @@ def PR(Info, threshold):
             POS = Info.data_unweighted[protein][threshold]['POS']
             vprint("POS : {}".format(POS), 15)
             try:
-                total += TP / POS
+                val = TP / POS
+                vwrite('Protein: {} PR : {:.2f}\n'.format(protein, val), "{}-Protein.txt".format(Info.local_path), 1)
+                total += val
             except ZeroDivisionError:
+                vwrite('Protein: {} PR : NONE\n'.format(protein), "{}-Protein.txt".format(Info.local_path), 1)
                 vprint("Protein {} had a 0 POS @ {}".format(protein, threshold), 8)
                 # Everytime a protein has no POS, ie. POS: 0, 
                 # Means that there is no predicted terms, dont count protein
@@ -84,6 +88,7 @@ def PR(Info, threshold):
         # Bad Error
         except KeyError:
             vprint("Protein: {} has no POS".format(protein), 1)
+        # Store intermediate data    
         vwrite('Protein: {}\t TP: {}\t POS: {}\n'.format(protein, TP, POS), Info.local_path, 1)
     # Divide by m(T) (# of proteins with at least one prediction @ threshold)   
     try:    
@@ -108,6 +113,7 @@ def RC(Info, threshold):
     Output:
     [0]       : Float       Recall
     '''
+    
     # Sum of all proteins 
     total = 0
     for protein in Info.prediction:
@@ -120,15 +126,19 @@ def RC(Info, threshold):
             TRUE = Info.data_unweighted[protein][threshold]['TRUE'] 
             vprint("TRUE : {}".format(TRUE), 15)
             try:
-                total += TP / TRUE
+                val = TP / TRUE
+                vwrite('Protein: {} RC : {:.2f}\n'.format(protein, val), "{}-Protein.txt".format(Info.local_path), 1)
+                total += val
             except ZeroDivisionError:
                 vprint("Protein {} had a 0 TRUE @ {}".format(protein, threshold), 1)
+                vwrite('Protein: {} RC : NONE\n'.format(protein), "{}-Protein.txt".format(Info.local_path), 1)
                 # Evreytime a protein has no TRUE, ie. TRUE: 0, dont count protein
                 # Means there are no True terms in benchmark
                 #This should NEVER happen for FMAX
         # Bad Error
         except KeyError:
             vprint("Protein: {} has no TRUE".format(protein), 1)
+        # Store intermediate data
         vwrite('Protein: {}\t TP: {}\t TRUE: {}\n'.format(protein, TP, TRUE), Info.local_path, 1)
     # If in full mode, divide by N (# proteins in benchmark)    
     if Info.mode == "full":

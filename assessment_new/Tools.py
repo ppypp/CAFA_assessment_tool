@@ -375,6 +375,8 @@ class Info:
             truth       = self.truth[protein]
             prediction  = self.prediction[protein]
             ic          = self.IC
+            # This is the union of terms and truths 
+            totalTerms = terms | truth
             '''# Get the subset of terms that have IC values
             terms_with_IC = terms & ic.keys()
             # Create a list of terms that dont have IC values 
@@ -478,7 +480,7 @@ class Info:
             weightedTrue = 0
             weightedFalse = 0
             # Get weightedTrue, weightedFalse values
-            for term in terms:
+            for term in totalTerms:
                 # If terms is true, add IC to weightedTrue
                 if term in true:
                     try:
@@ -496,9 +498,10 @@ class Info:
                     except KeyError:
                         vprint("WN : {} has no IC value".format(term), 5) 
             # Store in same format as other values
-            # TRUE, FLASE not threshold dependent
+            # TRUE, FALSE not threshold dependent
             TRUE  = weightedTrue
             FALSE = weightedFalse
+
             # For all thresholds
             for threshold in numpy.arange(0.00, 1.01, 0.01, float):
                 threshold = numpy.around(threshold, decimals = 2)
@@ -559,7 +562,15 @@ class Info:
                 if(threshold == 0.00):                 
                     TP  = TRUE
                     POS = self.OBOICTotal
-                
+                    
+                '''##############################################
+                if protein == "T96060019016":
+                    print("TRUE: {}".format(TRUE))
+                    print(true)
+                    print(terms)
+                    print(totalTerms)
+                '''##############################################
+                    
                 # Store values
                 self.data[protein][threshold] = {
                   'FP':FP, 'TN':TN, 'TP':TP, 'FN':FN, 
@@ -627,7 +638,7 @@ def vprint(message, priority):
     Change number for different verbosity
     '''
     
-    if priority < 5:
+    if priority < 6:
         print(message)
         
         

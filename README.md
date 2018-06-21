@@ -1,16 +1,16 @@
-# Precision-Recall Assessment of Protein Function Prediction
+# Assessment of Protein Function Prediction
 
 ## Introduction
 Critical Assessment of Function Annotation (CAFA), is a community-wide challenge designed to provide a large-scale assessment of computational methods dedicated to predicting protein function.
 
 More information can be found at http://biofunctionprediction.org/cafa/ as well as the CAFA2 paper (Jiang et al, 2016)
 
-This toolset provides an assessment for CAFA submissions based on precision and recall. 
+This toolset provides an assessment for CAFA submissions. 
 
 For bug reports, comments or questions, please email nzhou[AT]iastate.edu.
 
 ## Dependencies
- - Python 2.7 or Python 3
+ - Python 3
  - Python packages can be downloaded from their sites or installed from repositories:
     1. [Biopython](http://biopython.org)
     2. [yaml](http://www.yaml.org/download.html)
@@ -22,22 +22,16 @@ For bug reports, comments or questions, please email nzhou[AT]iastate.edu.
 ## Main Functions
  We provide two main functions to assist in the evaluation of GO-term prediction within the scope of CAFA, the main assessment function and the plot function.
  - `assessment.py` 
-	- Only input needed is the configuration file `config.yaml`, where the following parameters are specified in the first section `assessment`.
-	- First parameter `file`           : prediction file formatted according to [CAFA3 formats](https://www.synapse.org/#!Synapse:syn5840147/wiki/402192)
-	- Second parameter `ic_path`       : path of the calculated infromation content map. This must be made prior to running `assessment.py`. This is achieved by running `IC.py` in the ICTool directory, instructions below in auxillary functions.
-	- Third parameter  `obo_path`      : path of the gene ontology obo file. The latest version can be downloaded [here](http://purl.obolibrary.org/obo/go.obo). Note that the obo file used here should not be older than the one used in the prediction.
-	- Fourth parameter `benchmark_path`: directory of the benchmark folder. Specific formats are required for the benchmark folder, including two sub-directories: groundtruth and lists. Please refer to auxiliary function `benchmark_folder.py` for the creation of this folder, as well as the genral creation of benchmarks. An example benchmark folder is given in this repository `./assessment/benchmark`
-	- Fifth parameter  `results_path`  : Folder where results are saved. A `rawdata` folder will be created within the results folder.
-	- Seventh parameter `gaf_path`     : Location of the GAF File with respect to the ICTool directory
-	- Note that only the first section `assessment` of the configuration file is used here, the rest of the configuration file can be ignored for this function	
- - `plot.py`
-	- Only input needed is the configuration file `config.yaml`, where the following parameters are specified in the second section `plot`.
-	- First parameter `results`: the results from the `assessment.py` function.
-	- Second parameter `title`: title of the plot. Optional.
-	- Third parameter `smooth`: whether the precision-recall curves should be smoothed. Input 'Y' or 'N'. 
-	- Fourth parameter(s) `fileN`: name of the result file to be plotted. Can add up to 12 files. These results will be drawn on the same plot.
-	- Example: if the prediction file is `ZZZ_1_9606.txt`, the result file in the results folder will be `ZZZ_1_9606_results.txt`. Only input `ZZZ_1_9606` in the above parameter for plotting. 
-
+    - Only input needed is the configuration file `config.yaml`, where the following parameters are specified in the first section `assessment`.
+    - First parameter  `prediction_path` : prediction file formatted according to [CAFA3 formats](https://www.synapse.org/#!Synapse:syn5840147/wiki/402192)
+    - Second parameter  `obo_path`       : path of the gene ontology obo file. The latest version can be downloaded [here](http://purl.obolibrary.org/obo/go.obo). Note that the obo file used here should not be older than the one used in the prediction.	
+    - Third parameter `ic_path`          : path of the calculated infromation content map. This must be made prior to running `assessment.py`. This is achieved by running `IC.py` in the ICTool directory, instructions below in auxillary functions.
+    - Fourth parameter `benchmark_path`  : directory of the benchmark folder. Specific formats are required for the benchmark folder, including two sub-directories: groundtruth and lists. Please refer to auxiliary function `benchmark_folder.py` for the creation of this folder, as well as the genral creation of benchmarks. An example benchmark folder is given in this repository `./assessment/benchmark`
+    - Fifth parameter  `results_path`    : Folder where results are saved. A `rawdata` folder will be created within the results folder.
+    - Seventh parameter `gaf_path`       : Location of the IC File 
+    - Eigth parameter `gaf_path`         : Location of the GAF File (with respect to the ICTool directory if relative)
+    - Note that only the first section `assessment` of the configuration file is used here, the rest of the configuration file can be ignored for this function	
+ 
 
 
 ## Auxiliary Functions 
@@ -53,7 +47,8 @@ Therefore, we here provide functions to convert between UniProt IDs and CAFA3 ID
 	- First function `uniprotac_to_cafaid(taxon, uniprotacs)`.
 	- Second function `cafaid_to_uniprot(taxon, cafaids)`.
 	- Refer to comments in the script `./ID_conversion/ID_conversion.py` and third example below for usage.
- - `./ICTool/IC-GAF.py` 
+ 
+- `./ICTool/IC-GAF.py` 
 	- Calculates the Information content of a given OBO
 	- How to use: From the ICTool directory `IC.py ../config.yaml`.
 	-  It uses the assessement config file, so once you have that setup, this will run on the same file set.
@@ -63,9 +58,13 @@ Therefore, we here provide functions to convert between UniProt IDs and CAFA3 ID
 	- How to use: From the ICTool directory `IC.py ../config.yaml`.
 	-  It uses the assessement config file, so once you have that setup, this will run on the same file set.
 
+- `./ICTool/IC-MATRIX.py` 
+	- Calculates the Information content of a given a list of Proteins, Terms and Ontologies.
+	- How to use: From the ICTool directory `IC.py ../config.yaml`.
+	-  It uses the assessement config file, so once you have that setup, this will run on the same file set.
+
 ## Examples	
  - `./assessment.py config.yaml`
- - `./plot.py config.yaml`
  - `./ID_conversion/ID_conversion.py ./ID_conversion/example_uniprot_accession_8355.txt 8355 ./ID_conversion/example_output.txt`
  - `./benchmark_pipeline.sh`
 	 

@@ -30,16 +30,16 @@ def NSMIN(Info):
         clear(data)
         # Store for inner methods
         Info.local_path = data       
-        vprint("Threshold is {}".format(threshold), 5)
+        vprint("Threshold is {}".format(threshold), 15)
         # RU for this prediction @ threshold
         ru = RU(Info, threshold)
-        vprint("RU is {}".format(ru), 5)
+        vprint("RU is {}".format(ru), 15)
         # MI for this prediction @ threshold
         mi = MI(Info, threshold)
-        vprint("MI is {}".format(mi), 5)
+        vprint("MI is {}".format(mi), 15)
         # S-val for this prediction @ threshold
         Sval = S(ru, mi)
-        vprint("The NS-val at {:.2f} is {}".format(threshold, Sval), 5)
+        vprint("The NS-val at {:.2f} is {}".format(threshold, Sval), 15)
         # Write to overview
         vwrite("Threshold: {:.2f},\t RU: {:.4f},\t MI: {:.4f},\t NS: {:.4f}\n".format(threshold, ru, mi, Sval), overview, 1)
         # Check if S-val is less than current S-min

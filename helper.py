@@ -163,7 +163,7 @@ def mkdir_mode(path):
 def mkdir_threshold(path):
     for threshold in numpy.arange(0.00, 1.01, 0.01, float):
         threshold = numpy.around(threshold, decimals = 2)
-        mkdir_p('{}/{}/'.format(path, threshold))
+        mkdir_p('{}/{:.2f}/'.format(path, threshold))
 
     
 def read_config_MAIN():
