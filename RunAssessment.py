@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from assessment.Fmetric import FMAX
-from assessment.WeightedFmetric import WFMAX
-from assessment.Smetric import SMIN
-from assessment.NormalizedSmetric import NSMIN
-from assessment.GOPrediction import GOPrediction
-from assessment.Tools import Info, readOBO, vprint
+from assessment_new.Fmetric import FMAX
+from assessment_new.WeightedFmetric import WFMAX
+from assessment_new.Smetric import SMIN
+from assessment_new.NormalizedSmetric import NSMIN
+from assessment_new.GOPrediction import GOPrediction
+from assessment_new.Tools import Info, readOBO, vprint, vwrite, clear, getTime
 import helper
 import os
 import gc
@@ -16,7 +16,7 @@ if __name__=='__main__':
     '''
     Main function that takes a predicition and returns calculated values
     '''
-    
+    start_time = getTime(0)
     # Read Config
     obo_path, ic_path, prediction_path, benchmark_directory, results_directory = helper.read_config_MAIN()
     # Setup workspace
@@ -29,6 +29,14 @@ if __name__=='__main__':
     prediction_file = open(prediction_path, 'r')
     # Read in predictions, split by ontology, and save to disk
     all_prediction.read_and_split_and_write(obo_path, prediction_file)
+    
+    
+     ##################################################
+    # Speed up if rerunning
+    cp.dump(all_prediction, open("Temp/Prediction.all","wb"))
+    #all_prediction = cp.load( open("Temp/Prediction.all","rb"))
+    ##################################################
+    
     # Store values
     author, model, keywords, taxon = all_prediction.author, all_prediction.model, all_prediction.keywords, all_prediction.taxon
     # Make Results path
@@ -43,65 +51,90 @@ if __name__=='__main__':
     
     # RUN ON ALL GROUPS
     # For each ontology
-    for ontology in ['MFO']:
-    #for ontology in ['BPO','CCO','MFO']:
-        vprint(ontology,1)
-        
+    #for ontology in ['MFO']:
+    for ontology in ['BPO','CCO','MFO']:
+        vprint(ontology, 1)
+        getTime(start_time)
         path = os.path.splitext(prediction_file.name)[0] + '_' + ontology + '.txt'
         vprint(path, 9)
         
         # For each type (NK, LK)
-        for Type in ['type1']:
-        #for Type in ['type1','type2']:
-            vprint(Type,1)
+        #for Type in ['type1']:
+        for Type in ['type1','type2']:
+            vprint(Type, 1)
+            getTime(start_time)
             info = Info(ontology, Type)
             info.setTeamInfo(author, model, keywords, taxon)
             info.setPaths(results_path, prediction_path, obo_path, path)
+            info.setTime(start_time)
             
-            cp.dump(info, open("TeamInfo.info","wb"))
+            cp.dump(info, open("Temp/TeamInfo.info","wb"))
             vprint("Saved TeamInfo Info",1)
-            #info = cp.load(open("TeamInfo.info", "rb"))
+            getTime(info.start_time)
+            #info = cp.load(open("Temp/TeamInfo.info", "rb"))
             
             info.setIC(ic_path)
             
-            cp.dump(info, open("IC.info","wb"))
+            cp.dump(info, open("Temp/IC.info","wb"))
             vprint("Saved IC Info",1)
-            #info = cp.load( open("IC.info","rb"))
+            getTime(info.start_time)
+            #info = cp.load( open("Temp/IC.info","rb"))
             
             info.setBenchmark(obocounts, benchmark_directory)
             
-            cp.dump(info, open("Benchmark.info","wb"))
+            cp.dump(info, open("Temp/Benchmark.info","wb"))
             vprint("Saved Benchmark Info",1)
-            #info = cp.load( open("Benchmark.info","rb"))
+            getTime(info.start_time)
+            #info = cp.load( open("Temp/Benchmark.info","rb"))
             
             info.setPrediction()
             
-            cp.dump(info, open("Prediction.info","wb"))
+            cp.dump(info, open("Temp/Prediction.info","wb"))
             vprint("Saved Prediction Info",1)
-            #info = cp.load(open("Prediction.info","rb"))
+            getTime(info.start_time)
+            #info = cp.load(open("Temp/Prediction.info","rb"))
             
             info.setInfo()
             
-            cp.dump(info, open("Info.info","wb"))
+            cp.dump(info, open("Temp/Info.info","wb"))
             vprint("Saved Final Info",1)
-            #info = cp.load(open("Info.info","rb"))
+            getTime(info.start_time)
+            #info = cp.load(open("Temp/Info.info","rb"))
             
-            vprint("Done prep work", 9)
+            #TESTING AREA            
+            #print(info.ProteinTrueTerms["T96060007002"])
+            
+            
+            vprint("Done prep work", 1)
             # For each mode
             for mode in ['partial', 'full']:
+            #for mode in ['full']:
                 # Threshold 0 should have the most proteins
                 if(info.ProteinInPrediction[0.0] == 0):
                     vprint("No predicted proteins", 1)                    
                     continue
                 info.setMode(mode)
-                vprint("Mode: {}".format(mode), 9)
+                vprint("Mode: {}".format(mode), 1)
+                getTime(info.start_time)
                 # RUN METRICS
-                #print("FMAX")
-                print(FMAX(info))
-                #print("WFMAX")
-                #print(WFMAX(info))
-                #print("SMIN")
-                #print(SMIN(info))
-                #print("NSMIN")
-                #print(NSMIN(info))
-                vprint("Done", 8)
+                # Set root path                
+                path = "{}\{}_{}_{}_Results".format(info.ResultPath, ontology, Type, mode)
+                clear(path)
+                print("FMAX")
+                F = FMAX(info)
+                vwrite("FMAX: {}".format(F))
+                
+                print("WFMAX")
+                WF = WFMAX(info)
+                vwrite("WFMAX: {}".format(F))
+                
+                print("SMIN")
+                S = SMIN(info)
+                vwrite("SMIN: {}".format(F))
+                
+                print("NSMIN")
+                NS = NSMIN(info)
+                vwrite("NSMIN: {}".format(F))
+                
+                vprint("Done", 1)
+                getTime(info.start_time)

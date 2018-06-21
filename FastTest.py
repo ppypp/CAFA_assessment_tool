@@ -7,18 +7,18 @@ import pickle as cp
 
 if __name__=='__main__':
     info = cp.load(open("Info.info", "rb"))
-    for mode in ['partial']:
-    #for mode in ['partial', 'full']:
+    #for mode in ['partial']:
+    for mode in ['partial', 'full']:
         info.setMode(mode)
         vprint("Mode: {}".format(mode), 9)
         # RUN METRICS
-        #print(info.data_unweighted)
+        
         print("FMAX")
         print(FMAX(info))
-        #print("WFMAX")
-        #print(WFMAX(info))
-        #print("SMIN")
-        #print(SMIN(info))
-        #print("NSMIN")
-        #print(NSMIN(info))
+        print("WFMAX")
+        print(WFMAX(info))
+        print("SMIN")
+        print(SMIN(info))
+        print("NSMIN")
+        print(NSMIN(info))
         vprint("Done", 8)

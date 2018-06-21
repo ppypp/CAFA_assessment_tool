@@ -21,7 +21,7 @@ def printTime(start_time, message):
         start_time = time.time()
     
     print(message)
-    print(time.time() - start_time)
+    
     return start_time
     
     
@@ -140,6 +140,7 @@ def mkdir_results(path):
     mkdir_ontology(path + '/NSMIN/')
     mkdir_p(path + '/AUC/')
     mkdir_ontology(path + '/AUC/')
+    mkdir_p(path + '/Protein/')
 def mkdir_ontology(path):
     mkdir_p(path + '/bpo/')
     mkdir_type(path + '/bpo/')

@@ -1,7 +1,7 @@
 ---
 assessment:
 # Predicition File (Only One  file allowed)
-        prediction_path:                         /home/mcgerten/cafa3/CAFA_assessment_tool/ZZZ_1_9606.txt
+        prediction_path:                         /home/mcgerten/cafa3/CAFA_assessment_tool/ExampleData/ZZZ_1_9606.txt
 # OBO file used 
         obo_path:                                        /home/mcgerten/cafa3/CAFA3_test_data/gene_ontology_edit.obo.2016-06-01
 # benchmark path

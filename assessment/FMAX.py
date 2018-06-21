@@ -163,8 +163,8 @@ def PRRC (info, threshold, protein, ontology, Type, mode):
                 # If it is actually True, increment TP
                 if info.predicted_bench[protein][term][1] :
                     TP += 1
-            data.write('Term, Count, TP')                 
-            data.write('{}\t {}\t {}\n'.format(term, POS, TP))             
+            data.write('Term, POS, TP, TRUE\n')                 
+            data.write('{}\t {}\t {}\t {}\n'.format(term, POS, TP, TRUE))             
         data.close() 
     # Find PR: TP / (TP + FP)
     try:
