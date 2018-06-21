@@ -77,9 +77,10 @@ def PR(Info, threshold):
             try:
                 total += TP / POS
             except ZeroDivisionError:
-                vprint("Protein {} had a 0 POS @ {}".format(protein, threshold), 4)
+                vprint("Protein {} had a 0 POS @ {}".format(protein, threshold), 8)
                 # Everytime a protein has no POS, ie. POS: 0, 
                 # Means that there is no predicted terms, dont count protein
+                # This has been taken care of in the ProteinInPrediction code in Tools
         # Bad Error
         except KeyError:
             vprint("Protein: {} has no POS".format(protein), 1)
@@ -121,7 +122,7 @@ def RC(Info, threshold):
             try:
                 total += TP / TRUE
             except ZeroDivisionError:
-                vprint("Protein {} had a 0 TRUE @ {}".format(protein, threshold), 4)
+                vprint("Protein {} had a 0 TRUE @ {}".format(protein, threshold), 1)
                 # Evreytime a protein has no TRUE, ie. TRUE: 0, dont count protein
                 # Means there are no True terms in benchmark
                 #This should NEVER happen for FMAX
