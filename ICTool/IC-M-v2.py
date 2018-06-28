@@ -10,6 +10,11 @@ import scipy as sc
 import time
 
 def main():
+    '''
+    Comment/ uncomment to complete steps
+    Much faster to make DAG, then A, then IC
+    than to try and complete all at once
+    '''
     # Read OBO
     # Build DAG
     '''
@@ -306,7 +311,11 @@ def makeA(LIST_Terms):
     print("A is complete")
     return A, LIST_Protein
     
+    
 def calculateIC(DAGs, As, LISTs):
+    '''
+    
+    '''
     IC = {}
     for ontology in ['BPO','CCO','MFO']:
     #for ontology in ['BPO']:
@@ -339,7 +348,9 @@ def calculateIC(DAGs, As, LISTs):
                 I[term] = [0, 0]
         # Store in IC dictionary 
         IC[ontology] = I
+        # Store dictionary where assessment will use it
         cp.dump(IC[ontology], open("ICdata/ia_{}.map".format(ontology), "wb"))
+        # Save in human readable format
         convertToReadable(IC[ontology], "{}".format(ontology))
         print("Done with {}".format(ontology))
     return IC
@@ -353,6 +364,8 @@ M3      S        = sum(support);
 M4      subia(i) = sum(support & subA(:, i)) / S;
   end
 '''
+
+
 def ICcalculator(DAG, A):
     ic = {}
     start_time = time.time()

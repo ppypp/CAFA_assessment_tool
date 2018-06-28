@@ -10,6 +10,10 @@ import scipy as sc
 import time
 
 def main():
+    '''
+    Read in Matlab IC List in order to check metrics 
+    without worrying about IC correctness
+    '''
 
     for ontology in ['BPO','CCO','MFO']:
         counter = 0
@@ -39,7 +43,9 @@ def main():
      
     
         print ("I have done {} annotations".format(counter))
+        # Store dictionary where assessment will use it
         cp.dump(data, open("ICdata/ia_{}-L.map".format(ontology),"wb"))
+        # Save in Human readable format
         convertToReadable(data, "{}".format(ontology))
         
 

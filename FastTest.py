@@ -6,6 +6,13 @@ from assessment.Tools import vprint
 import pickle as cp
 
 if __name__=='__main__':
+    '''
+    Once you have read in the prediction and benchmark for a particular file, 
+    you can use the temp files saved to skip that part of the process
+    Only work for 1 Ontology/Type at a time,
+    but signifgantly speeds up the iterative cycle
+    '''
+    
     info = cp.load(open("Info.info", "rb"))
     #for mode in ['partial']:
     for mode in ['partial', 'full']:

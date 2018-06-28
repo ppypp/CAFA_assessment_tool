@@ -33,7 +33,7 @@ if __name__=='__main__':
     # Read in predictions, split by ontology, and save to disk
     all_prediction.read_and_split_and_write(obo_path, prediction_file)
     
-     ##################################################
+    ##################################################
     # Speed up if rerunning
     #cp.dump(all_prediction, open("Temp/Prediction.all","wb"))
     #all_prediction = cp.load( open("Temp/Prediction.all","rb"))
@@ -104,7 +104,6 @@ if __name__=='__main__':
             #info = cp.load(open("Temp/Info.info","rb"))
             
             
-            vprint("Done prep work", 1)
             # For each mode
             for mode in ['partial', 'full']:
             #for mode in ['full']:
@@ -143,9 +142,9 @@ if __name__=='__main__':
                 AUC(info)
                 
                 #TESTING AREA            
-                vprint("Coverage: {}".format(info.Coverage), 1)
-                vprint("ProteinInPrediction[0.00] : {}".format(info.ProteinInPrediction[0.00]), 1)
-                vprint("ProteinInBenchmark : {}".format(info.ProteinInBenchmark), 1)
+                #vprint("Coverage: {}".format(info.Coverage), 1)
+                #vprint("ProteinInPrediction[0.00] : {}".format(info.ProteinInPrediction[0.00]), 1)
+                #vprint("ProteinInBenchmark : {}".format(info.ProteinInBenchmark), 1)
                 
                 vprint("Done", 1)
                 getTime(info.start_time)
