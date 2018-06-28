@@ -452,9 +452,10 @@ class Info:
         [2]   : List[Float]   Second values
         [3]   : Float         Threshold
         '''
+        
         info = self
         
-        if(tool == "FMAX"):
+        if  (tool == "FMAX"):
             return F.output(info, ontology, Type, mode)
         elif(tool == "WFMAX"):
             return W.output(info, ontology, Type, mode)

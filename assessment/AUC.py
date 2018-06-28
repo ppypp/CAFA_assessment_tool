@@ -5,6 +5,7 @@ from collections import defaultdict
 
 '''
 AUC By GOterm 
+NEEDS LOTS OF HELP -> USE NEW ONE 
 '''
 
 def output(info, ontology, Type, mode):

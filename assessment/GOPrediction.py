@@ -362,6 +362,7 @@ class GOPrediction:
             print("AUTHOR, MODEL, KEYWORDS, ACCURACY (optional), predictions, END")
             raise ValueError   
 
+
     def read_and_split_and_write(self, obo_path, prediction_path):
         '''
         Description

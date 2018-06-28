@@ -40,7 +40,7 @@ if __name__=='__main__':
     helper.printTime(start_time, "Done with prediction / Start making result")
     # Make Results path
     results_path = results_directory + " " + author
-    # Make directory 
+    # Make directories
     helper.mkdir_results(results_path)
     # Make a result object for storing output
     r = result(results_path)
@@ -71,6 +71,8 @@ if __name__=='__main__':
                 for mode in ['partial', 'full']:
                     print ('Mode: {}\n'.format(mode))
                     r.coverage = i.coverage()
+                    
+                    # R-temps in case casing problems between metrics, dont think it chnaged anything
                     
                     helper.printTime(start_time, "Starting FMAX")
                     r_temp = r
