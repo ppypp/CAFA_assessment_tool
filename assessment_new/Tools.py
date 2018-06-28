@@ -83,6 +83,18 @@ class Info:
         # For writing to file, saved here so i dont have to pass the path around
         self.local_path             = ""
         
+        # AUC 
+        # KEY: GoTerm              Value: Proteins
+        self.termList  = defaultdict(set)
+        # KEY: GoTerm              Value: Proteins
+        self.termTruth = defaultdict(set)
+        # KEY: GoTerm              Value: Proteins
+        # KEY: Protein             Value: Confidence
+        self.termPrediction = defaultdict(defaultdict)
+        # KEY: GoTerm              Value: Thresholds   
+        # KEY: Threshold           Value: {FP, TN, TP, FN, POS, NEG, TRUE, FALSE, TPR, FPR}
+        self.data_terms        = defaultdict(defaultdict)
+        
         
     def setMode(self, mode):
         '''
@@ -354,6 +366,8 @@ class Info:
         self.generateIntermediateData()
         # Run coverage 
         self.Coverage = self.coverage()
+        # Run AUC Benchmark
+        self.convertbenchmarkforAUC()
         # Ready to run metrics now
         return True 
     
@@ -587,7 +601,52 @@ class Info:
                 
         print ("Done with Intermediate value creation")  
     
-    
+     ################## Convert Benchmark to Term-centric #############
+    def convertbenchmarkforAUC(self):
+        '''
+        Convert Benchmark to Term-based
+        For use with AUC
+        
+        '''
+                
+        for protein in self.prediction:
+            # Local copies for particular protein
+            terms       = self.terms[protein]
+            truth       = self.truth[protein]
+            prediction  = self.prediction[protein]
+            # Construct Lists
+            for term in terms:
+                self.termList[term].add(protein)
+            for term in truth:
+                self.termTruth[term].add(protein)
+            for term in prediction:
+                self.termPrediction[term][protein] = prediction[term]
+        #################################
+        # Only keep those with 10+ proteins
+        #################################
+        delList = []
+        for term in self.termTruth:
+            # If less than 10, delete all references
+            if (len(self.termTruth[term]) < 10):
+                delList.append(term)
+        for term in delList:
+            try:
+                del(self.termList[term])
+            except:
+                pass
+            try:
+                del(self.termTruth[term])
+            except:
+                pass
+            try:            
+                del(self.termPrediction[term])
+            except:
+                pass
+        # Now have a benchmark set for terms 
+        # where every term has at least 10 proteins in the truth
+        
+        
+        
     def tot(IC, T, P):
         '''
         Sum the IC of all terms

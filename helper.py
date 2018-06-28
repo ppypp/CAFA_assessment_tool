@@ -141,6 +141,7 @@ def mkdir_results(path):
     mkdir_p(path + '/AUC/')
     mkdir_ontology(path + '/AUC/')
     mkdir_p(path + '/Protein/')
+    mkdir_p(path + '/Term/')
 def mkdir_ontology(path):
     mkdir_p(path + '/bpo/')
     mkdir_type(path + '/bpo/')

@@ -23,20 +23,19 @@ if __name__=='__main__':
     vprint('\n Evaluating {}\n'.format(prediction_path), 1 )
     
     ###################################### Prediction IN #################################3
-    '''
+    
     # Get predictions
     all_prediction  = GOPrediction()
-    '''
+    
     prediction_file = open(prediction_path, 'r')
-    '''
+    
     # Read in predictions, split by ontology, and save to disk
     all_prediction.read_and_split_and_write(obo_path, prediction_file)
     
-    '''
      ##################################################
     # Speed up if rerunning
     #cp.dump(all_prediction, open("Temp/Prediction.all","wb"))
-    all_prediction = cp.load( open("Temp/Prediction.all","rb"))
+    #all_prediction = cp.load( open("Temp/Prediction.all","rb"))
     ##################################################
     
     # Store values
@@ -53,8 +52,8 @@ if __name__=='__main__':
     
     # RUN ON ALL GROUPS
     # For each ontology
-    for ontology in ['MFO']:
-    #for ontology in ['BPO','CCO','MFO']:
+    #for ontology in ['MFO']:
+    for ontology in ['BPO','CCO','MFO']:
         vprint(ontology, 1)
         getTime(start_time)
         path = os.path.splitext(prediction_file.name)[0] + '_' + ontology + '.txt'
@@ -129,15 +128,15 @@ if __name__=='__main__':
                 
                 print("WFMAX")
                 WF = WFMAX(info)
-                vwrite("WFMAX: {}".format(F), summary_path, 1)
+                vwrite("WFMAX: {}".format(WF), summary_path, 1)
                 
                 print("SMIN")
                 S = SMIN(info)
-                vwrite("SMIN: {}".format(F), summary_path, 1)
+                vwrite("SMIN: {}".format(S), summary_path, 1)
                 
                 print("NSMIN")
                 NS = NSMIN(info)
-                vwrite("NSMIN: {}".format(F), summary_path, 1)
+                vwrite("NSMIN: {}".format(NS), summary_path, 1)
                 
                 
                 #TESTING AREA            
