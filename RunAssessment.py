@@ -5,6 +5,7 @@ from assessment_new.Fmetric import FMAX
 from assessment_new.WeightedFmetric import WFMAX
 from assessment_new.Smetric import SMIN
 from assessment_new.NormalizedSmetric import NSMIN
+from assessment_new.AreaUnderCurve import AUC
 from assessment_new.GOPrediction import GOPrediction
 from assessment_new.Tools import Info, readOBO, vprint, vwrite, clear, getTime
 import helper
@@ -138,6 +139,8 @@ if __name__=='__main__':
                 NS = NSMIN(info)
                 vwrite("NSMIN: {}".format(NS), summary_path, 1)
                 
+                print("AUC")
+                AUC(info)
                 
                 #TESTING AREA            
                 vprint("Coverage: {}".format(info.Coverage), 1)

@@ -379,9 +379,12 @@ class Info:
         '''
         
         # Set paths
-        path = self.ResultPath + "/{}_{}".format((self.ontology.lower()), self.Type)
+        path = self.ResultPath + "/Protein/{}_{}".format((self.ontology.lower()), self.Type)
+        # Clear old files
         clear("{}.txt".format(path))
         clear("{}_unweighted.txt".format(path))
+        
+        
         # For all proteins in prediction
         for protein in self.prediction:
             # Set local variables
@@ -608,7 +611,10 @@ class Info:
         For use with AUC
         
         '''
-                
+        
+        path = self.ResultPath + "/Term/{}_{}".format((self.ontology.lower()), self.Type)
+        clear("{}_term.txt".format(path))         
+        
         for protein in self.prediction:
             # Local copies for particular protein
             terms       = self.terms[protein]
@@ -624,6 +630,7 @@ class Info:
         #################################
         # Only keep those with 10+ proteins
         #################################
+        '''
         delList = []
         for term in self.termTruth:
             # If less than 10, delete all references
@@ -642,11 +649,104 @@ class Info:
                 del(self.termPrediction[term])
             except:
                 pass
+        '''
         # Now have a benchmark set for terms 
         # where every term has at least 10 proteins in the truth
-        
-        
-        
+        # Calculate base values
+        for term in self.termPrediction:    
+            # Set local copies
+            truth      = self.termTruth[term]
+            terms      = self.termList[term]
+            prediction = self.termPrediction[term]
+            
+            # This is the union of terms and truths 
+            totalTerms = terms | truth
+            # true is all the terms in truth 
+            true = truth
+            vprint("Positive Set: {}".format(true), 15)
+            # Set difference
+            # false is the terms that are not true
+            false = terms - truth
+            vprint("Negative Set: {}".format(false), 15)
+            #####################################
+            # Set paths
+            path = self.ResultPath + "/Term/{}_{}".format((self.ontology.lower()), self.Type)
+            clear("{}_{}.txt".format(path, term))      
+            message = "Proteins: {} \n Truth: {} \n Prediction: {}\n".format(
+            terms, truth, prediction)
+            vwrite(message, "{}_{}.txt".format(path, term), 1)
+            ######################################
+            
+            # Get counts of terms, constant for all thresholds
+            # True (TP + FN)
+            TRUE = len(true)
+            # False (FP + TN)
+            FALSE = len(false) 
+################## Calculate FPR & TPR @ all thresholds #######################
+            for threshold in numpy.arange(0.00, 1.01, 0.01, float):
+                threshold = numpy.around(threshold, decimals = 2)
+                # Intialize Values
+                FP  = 0
+                TN  = 0
+                TP  = 0
+                FN  = 0 
+                # Get FP, TP values   
+                for term in prediction:
+                    # If Predicted but False
+                    if (prediction[term] >= threshold 
+                        and term in false):
+                        FP += 1
+                    # If Predicted and True
+                    if (prediction[term] >= threshold 
+                        and term in true):
+                        TP += 1       
+                # Set all values            
+                # False Positive
+                FP  = FP
+                # True Negative
+                TN  = FALSE - FP
+                # True Positve
+                TP  = TP
+                # False Negative
+                FN  = TRUE - TP
+                # Positive Prediction
+                POS = TP + FP
+                # Negative Prediction (Not Predicted)
+                NEG = FN + TN
+                # True positive rate (TP / (TP + FN))
+                try:
+                    TPR = TP / TRUE
+                except:
+                    TPR = 0
+                # False positive rate (FP / (FP + TN))
+                try:
+                    FPR = FP / FALSE
+                except:
+                    FPR = 0
+                '''
+                # Does this even apply to termcentric????
+                #SPECIAL CASE T = 0 
+                if(threshold == 0.00):                
+                    TP = TRUE                
+                    POS = self.OBOCount
+                '''
+                # Data_unweighted is for FMAX (Not using IC values)
+                self.data_terms[term][threshold] = {
+                 'FP':FP, 'TN':TN, 'TP':TP, 'FN':FN, 
+                 'POS':POS, 'NEG':NEG, 'TRUE':TRUE,'FALSE':FALSE,
+                 'TPR':TPR, 'FPR':FPR}
+                ################
+                # Split for readablity 
+                part1 = "\t FP: {},\t TN: {},\t TP: {},\t FN: {}".format(
+                FP, TN, TP, FN)
+                part2 = "\t POS: {},\t NEG: {},\t TRUE: {},\t FALSE: {}".format(
+                POS, NEG, TRUE, FALSE)
+                part3 = "\t TPR: {:.4f},\t FPR: {:.4f}".format(TPR, FPR)
+                name = "{} @ {:.2f} :".format(term, threshold)
+                vwrite("{}: {}, {}, {}\n".format(name, part1, part2, part3), "{}_term.txt".format(path), 1)
+    # Everything is set for AUC calculations
+
+         
     def tot(IC, T, P):
         '''
         Sum the IC of all terms
