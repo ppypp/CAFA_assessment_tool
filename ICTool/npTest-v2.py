@@ -3,6 +3,11 @@
 Created on Wed May 23 15:04:36 2018
 
 @author: mcgerten
+
+Used to test functionality of Matrix IC-tool with a known 
+data set to confirm functionality
+
+Works for provided data set
 """
 import numpy as np
 import math

@@ -3,6 +3,15 @@
 Created on Wed May 23 15:04:36 2018
 
 @author: mcgerten
+
+
+OLD Test client for testing Matrix IC method
+USE the new nptest-v2!!!!!!!!!!!!!!!!!!!!!!!
+
+############################################
+############################################
+############################################
+############################################
 """
 import numpy as np
 import math
